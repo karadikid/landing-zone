@@ -1,0 +1,29 @@
+#!/usr/bin/env python
+
+import boto3
+import json
+
+from pprint import pprint
+
+iam = boto3.client('iam')
+
+sts_assume_role_policy = json.load(open('policies/sts-assume-role.json'))
+
+sts_policy = iam.create_policy(PolicyName='lz-sts-assume-role',
+                               PolicyDocument=json.dumps(sts_assume_role_policy))
+
+allow_organizations = json.load(open('policies/allow-organizations.json'))
+
+orgs_policy = iam.create_policy(PolicyName='lz-allow-organizations',
+                                PolicyDocument=json.dumps(allow_organizations))
+
+ec2_trust_policy = json.load(open('policies/ec2-trust.json'))
+
+response = iam.create_role(RoleName='lz-cloud9-ec2',
+                           AssumeRolePolicyDocument=json.dumps(ec2_trust_policy))
+
+response = iam.attach_role_policy(RoleName='lz-cloud9-ec2',
+                                  PolicyArn=sts_policy['Policy']['Arn'])
+
+response = iam.attach_role_policy(RoleName='lz-cloud9-ec2',
+                                  PolicyArn=orgs_policy['Policy']['Arn'])
