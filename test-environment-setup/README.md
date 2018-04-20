@@ -37,7 +37,7 @@ Set up an AWS Cloud9 development environment in which you'll access a terminal s
 
 In your your terminal session within Cloud9, check out this source code:
 
-$ git clone https://github.com/ckamps/landing-zone.git
+    $ git clone https://github.com/ckamps/landing-zone.git
 
 ## Install boto3 Python Library for AWS
 
