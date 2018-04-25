@@ -105,7 +105,7 @@ The following automated test won't work until the following fix is merged into I
 
 https://github.com/chef/train/pull/286
 
-As a workaround, you can run Inspec in an interactive shell:
+As a workaround, you can run Inspec in an interactive shell. If necessary, replace `us-east-1` with the appropriate region.
 
     $ cat validate.rb | inspec shell -t aws://us-east-1
 
