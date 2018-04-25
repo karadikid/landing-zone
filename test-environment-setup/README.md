@@ -59,7 +59,9 @@ First, create a new IAM policy:
 4. Click JSON
 5. Copy the content of the following file over the content in the JSON editor:
 
-     $ cat landing-zone/test-environment-setup/policies/ec2-policy.json
+```
+$ cat landing-zone/test-environment-setup/policies/ec2-policy.json
+```
 
 6. Click Review policy
 7. Name the policy `lz-admin-ec2`
