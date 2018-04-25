@@ -1,0 +1,50 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": "iam:CreatePolicy",
+            "Resource": "*"
+        },
+                {
+            "Effect": "Allow",
+            "Action": "iam:DeletePolicy",
+            "Resource": "*"
+        },
+        {
+            "Effect": "Allow",
+            "Action": "iam:CreateRole",
+            "Resource": "*"
+        },
+        {
+            "Effect": "Allow",
+            "Action": "iam:DeleteRole",
+            "Resource": "*"
+        },
+        {
+            "Effect": "Allow",
+            "Action": "iam:Get*",
+            "Resource": "*"
+        },
+        {
+            "Effect": "Allow",
+            "Action": "iam:List*",
+            "Resource": "*"
+        },
+        {
+            "Effect": "Allow",
+            "Action": "organizations:DescribeOrganization",
+            "Resource": "*"
+        },
+        {
+            "Effect": "Allow",
+            "Action": "organizations:CreateAccount",
+            "Resource": "*"
+        },
+        {
+            "Effect": "Allow",
+            "Action": "sts:AssumeRole",
+            "Resource": "*"
+        }
+    ]
+}
