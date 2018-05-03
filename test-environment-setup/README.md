@@ -78,7 +78,7 @@ Associate the new policy with a new IAM role:
 7. Click Next: Review
 8. Name the role `lz-admin-ec2`
 
-Associate the new policy with your Cloud9 EC2 instance:
+Associate the new role with your Cloud9 EC2 instance:
 
 1. Access the EC2 service
 2. Select the `aws-cloud9-...` instance
