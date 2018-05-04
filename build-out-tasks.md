@@ -31,13 +31,13 @@ Log into Master account as IAM break glass admin user
 
 * Create break glass IAM group and user in each account (CloudFormation template)
 
-### 3. Bootstrap Platform Account
+### 3. Configure Platform Account
 
 Log in as break glass admin in platform account
 
 * Create S3 bucket in platform account for cloud formation templates (Python)
 
-* Publish cloud formation template to platform account's S3 bucket (Python)
+* Publish following cloud formation templates to platform account's S3 bucket (Python)
 
 * Create example IAM groups and users in platform account to simulate users prior to federated access (CloudFormation template)
   * Cloud admins
@@ -45,15 +45,94 @@ Log in as break glass admin in platform account
 
 * Create formal roles in platform account for IAM example groups so that they have sufficient access (CloudFormation template)
 
-### Log in as cloud admin in platform account
+### 4. Provision VPC in Platform Account
+
+Log in as cloud admin in platform account
 
 * Create vpc in account (CloudFormation template)
   * Apply to platform account
 
-* Deploy workload to vpc (CloudFormation template)
+### 5. Provision Workload to Platform Account
+
+Log in as cloud admin in platform account
+
+* Publish following cloud formation template to platform account's S3 bucket (Python)
+
+* Deploy example workload to vpc (CloudFormation template)
   * Apply to platform account
 
+### 6. Configure Logging Account
+
+Log in as cloud admin in logging account
+
+* Publish following cloud formation templates to platform account's S3 bucket (Python)
+
+* Create example IAM groups and users in platform account to simulate users prior to federated access (CloudFormation template)
+  * Cloud admins
+  * Workload admins
+
+* Create formal roles in platform account for IAM example groups so that they have sufficient access (CloudFormation template)
+
+* Centralized config for CloudTrail (CloudFormation) 
+* Centralized config for VPC FlowLogs (CloudFormation)
+* Centralized config for CloudWatch logs (CloudFormation)
+
+### 7. Configure Security Account
+
+Log in as cloud admin in security account
+
+* Publish following cloud formation templates to platform account's S3 bucket (Python)
+
+* Create example IAM groups and users in security account to simulate users prior to federated access (CloudFormation template)
+  * Cloud admins
+  * Workload admins
+
+* Create formal roles in security account for IAM example groups so that they have sufficient access (CloudFormation template)
+
+### 8. Provision VPC in Security Account
+
+Log in as cloud admin in security account
+
+* Create vpc in account (CloudFormation template)
+  * Apply to platform account
+  
+### 9. Configure Sandbox Account
+
+Log in as cloud admin in sandbox account
+
+* Publish following cloud formation templates to platform account's S3 bucket (Python)
+
+* Create example IAM groups and users in sandbox account to simulate users prior to federated access (CloudFormation template)
+  * Cloud admins
+  * Workload admins
+
+* Create formal roles in sandbox account for IAM example groups so that they have sufficient access (CloudFormation template)
+
+### 10. Provision VPC in Sandbox Account
+
+Log in as cloud admin in sandbox account
+
+* Create vpc in account (CloudFormation template)
+  * Apply to sandbox account
+
+### 9. Implement IAM Cross-account Access Roles
+
+Log in as cloud admin in platform account
+
+* Enable cross-account login from platform account
+
 ### Subsequent Enhancements
+
+All Acccounts
+
+* Enable CloudTrail in all accounts
+* Incorporate IAM user password policies (see current example)
+* Add AWS Config monitoring
+
+Master
+
+* Billing monitoring
+* CostExplorer
 
 * Enhance cloud admin role in platform account to enable cross account access to 
 
