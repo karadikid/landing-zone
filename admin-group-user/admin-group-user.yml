@@ -1,16 +1,16 @@
 AWSTemplateFormatVersion: '2010-09-09'
 
-Description: Create break glass administrative IAM group and user
+Description: Create administrative IAM group and user
 
 Parameters:
 
   pAdminGroupName:
-    Description: Break glass administrator group name
+    Description: Administrator group name
     Type: String
     Default: 'Admins'
 
   pAdminUserName:
-    Description: Break glass administrator user name
+    Description: Administrator user name
     Type: String
     Default: 'Administrator'
 
@@ -18,7 +18,7 @@ Parameters:
     Type: String
     AllowedPattern: .* # Consider enhancing pattern per requirements. e.g. AllowedPattern: [a-zA-Z0-9]*
     ConstraintDescription: 'Must conform to password policy'
-    Description: Break glass admin user's initial password
+    Description: Admin user's initial password
     NoEcho: True
 
 Resources:
