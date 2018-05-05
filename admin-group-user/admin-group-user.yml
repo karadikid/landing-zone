@@ -1,0 +1,41 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Description: Create break glass administrative IAM group and user
+
+Parameters:
+
+  pAdminGroupName:
+    Description: Break glass administrator group name
+    Type: String
+    Default: 'Admins'
+
+  pAdminUserName:
+    Description: Break glass administrator user name
+    Type: String
+    Default: 'Administrator'
+
+  pAdminUserPassword:
+    Type: String
+    AllowedPattern: .* # Consider enhancing pattern per requirements. e.g. AllowedPattern: [a-zA-Z0-9]*
+    ConstraintDescription: 'Must conform to password policy'
+    Description: Break glass admin user's initial password
+    NoEcho: True
+
+Resources:
+
+  rAdminGroup:
+    Type: "AWS::IAM::Group"
+    Properties:
+      GroupName: !Ref pAdminGroupName
+      ManagedPolicyArns:
+         - arn:aws:iam::aws:policy/AdministratorAccess 
+
+  rAdminUser:
+    Type: "AWS::IAM::User"
+    Properties: 
+      Groups:
+        - !Ref rAdminGroup
+      LoginProfile:
+        Password: !Ref pAdminUserPassword
+        PasswordResetRequired: true
+      UserName: !Ref pAdminUserName

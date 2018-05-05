@@ -94,22 +94,14 @@ Since we'll be using Python scripts to automate some of the AWS environment set 
 
 ## Validate the Environment
 
-We'll use the Inspec testing framework to help validate that the environment is set up properly. Inspec has a set of built-in
+We'll use the InSpec testing framework to help validate that the environment is set up properly. InSpec has a set of built-in
 resources for AWS that ease the process of validating that AWS resources are configured properly.
 
-Install Inspec:
+Install InSpec:
 
     $ sudo gem install inspec
 
-The following automated test won't work until the following fix is merged into Inspec:
-
-https://github.com/chef/train/pull/286
-
-As a workaround, you can run Inspec in an interactive shell. If necessary, replace `us-east-1` with the appropriate region.
-
-    $ cat validate.rb | inspec shell -t aws://us-east-1
-
-Once the bug is fixed, you will be able to run the following command: 
+Run the following command to execute an InSpec-based test script:
 
     $ inspec exec validate.rb -t aws://us-east-1
 

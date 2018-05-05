@@ -2,21 +2,13 @@
 
 Log in as root in master account
 
-* Create S3 bucket in master account for bootstrap cloud formation templates (Python)
-
-* Publish bootstrap CloudFormation templates to S3 (Python)
-
-* Create break glass admin IAM group (CloudFormation template)
-  * Apply to master account
-
-* Create break glass admin IAM user (CloudFormation template)
-  * Apply to master account
+* Create break glass admin IAM group and user (CloudFormation template)
 
 ### 2. Organization, OUs and Member Account Creation
 
 Log into Master account as IAM break glass admin user
 
-* Create OU (Python)
+* Create OUs (Python)
   * Create: sandbox, platform, hosting
   
 * Create member account (Python)
@@ -29,7 +21,7 @@ Log into Master account as IAM break glass admin user
   
 * Delete default VPC from each member account
 
-* Create break glass IAM group and user in each account (CloudFormation template)
+* Create break glass admin IAM group and user in each member account (CloudFormation template)
 
 ### 3. Configure Platform Account
 

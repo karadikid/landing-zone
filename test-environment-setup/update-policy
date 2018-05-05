@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+AWS_REGION=us-east-1
+POLICY_ARN=arn:aws:iam::421305190687:policy/lz-admin-ec2
+
+aws iam create-policy-version --policy-arn ${POLICY_ARN} \
+                              --policy-document file:///$PWD/ec2.json \
+                              --set-as-default \
+                              --region ${AWS_REGION}
