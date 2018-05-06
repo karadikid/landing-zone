@@ -41,6 +41,8 @@ Set up an AWS Cloud9 development environment in which you'll access a terminal s
 
 * Log into the AWS console as the Administrator IAM user
 * Create a new Cloud9 development environment
+  * Select the instance type that best suits your needs
+  * Consider overriding the default cost-savings setting
 * Open the IDE
 
 ## Disable Cloud9 Managed Temporary Credentials
