@@ -63,6 +63,8 @@ In your your terminal session within Cloud9, check out this source code:
 
 ## Attach Suitable IAM Role to Cloud9 EC2 Instance
 
+TO DO: Create CloudFormation template for the following set up and provide directions to run it from the AWS console using the Administrator account.
+
 First, create a new IAM policy:
 
 1. In the AWS Console, access the IAM service
