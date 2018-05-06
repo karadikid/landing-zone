@@ -25,15 +25,15 @@ https://docs.aws.amazon.com/IAM/latest/UserGuide/id_root-user.html
 
 If your account doesn't already have a suitable administrator IAM user, add an IAM user to act an AWS administrator in the Master account.  Since the root account user cannot execute STS assume role functions, you'll need an IAM user to perform those tests.
 
-Enable both console and access key access. 
+Use CloudFormation from within the root account to execute the following template:
 
-https://docs.aws.amazon.com/IAM/latest/UserGuide/getting-started_create-admin-group.html
+    ../admin-group-user/admin-group-user.yml
 
 ## Set up AWS Cloud9 Development Environment
 
 Set up an AWS Cloud9 development environment in which you'll access a terminal session of an Amazon Linux instance from which you can run scripts to manage AWS Organizations and AWS accounts added to the organization.
 
-* Log into the AWS console as the new Administrator IAM user
+* Log into the AWS console as the Administrator IAM user
 * Create a new Cloud9 development environment
 * Open the IDE
 
