@@ -28,6 +28,12 @@ If your account doesn't already have a suitable administrator IAM user, add an I
 Use CloudFormation from within the root account to execute the following template:
 
     ../admin-group-user/admin-group-user.yml
+    
+Log in as the new Administrator IAM user.
+
+As a best practice, also enable MFA for the Administrator account:
+
+https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_mfa_enable_virtual.html
 
 ## Set up AWS Cloud9 Development Environment
 
