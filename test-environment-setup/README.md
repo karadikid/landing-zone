@@ -45,7 +45,13 @@ Set up an AWS Cloud9 development environment in which you'll access a terminal s
   * Consider overriding the default cost-savings setting
 * Open the IDE
 
-## Disable Cloud9 Managed Temporary Credentials
+### Set Keybinding for Built-in ACE Editor
+
+If you prefer `vim`, emacs, etc key bindings, select `AWS Cloud9 -> Preferences -> KEYBINDINGS` and set the keybinding of interest.
+
+When you open files in the Cloud9 tree, the ACE editor will be used along with the selected keybinding.
+
+### Disable Cloud9 Managed Temporary Credentials
 
 By default, Cloud9 automatically manages a set of AWS credentials on your behalf by refreshing the content of 
 `~/.aws/credentials`.  The AWS CLI and AWS SDKs automatically look for credentials in multiples locations

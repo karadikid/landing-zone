@@ -4,6 +4,9 @@ Log in as root in master account
 
 * Create break glass admin IAM group and user (CloudFormation template)
 
+* TO DO:
+  * Remove access keys
+
 ### 2. Organization, OUs and Member Account Creation
 
 Log into Master account as IAM break glass admin user
@@ -18,6 +21,13 @@ Log into Master account as IAM break glass admin user
   * Create sandbox account
   * Create non-prod account
   * Create prod account
+
+* For each member account, manually set up root account:
+  * Attempt to sign in as root using email address and request password
+  * Reset password and save in external vault
+  * Once logged in, enable MFA
+  * Remove access keys
+  * Limit access to console only; no programmatic access
   
 * Delete default VPC from each member account
 

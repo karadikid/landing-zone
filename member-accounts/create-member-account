@@ -141,7 +141,7 @@ def deploy_resources(credentials, template, stack_name, stack_region, admin_user
                 TemplateBody=template,
                 Parameters=[
                     {
-                        'ParameterKey' : 'AdminUsername',
+                        'ParameterKey' : 'pAdminUsername',
                         'ParameterValue' : admin_username
                     },
                     {

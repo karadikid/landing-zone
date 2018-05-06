@@ -1,0 +1,69 @@
+#!/usr/bin/env bash
+
+AWS_REGION=us-east-1
+ROOT_ID=r-xaci
+
+aws organizations enable-policy-type --root-id ${ROOT_ID} --policy-type SERVICE_CONTROL_POLICY --region ${AWS_REGION}
+
+aws organizations create-organizational-unit --parent-id ${ROOT_ID} --name "HostingOU"
+
+aws organizations create-policy \
+                    --name "RootDenySCP" \
+                    --description "Root Deny Service Control Policy (SCP)" \
+                    --type SERVICE_CONTROL_POLICY \
+                    --content file:///$PWD/service-control-policies/root-deny-scp.json \
+                    --region ${AWS_REGION}
+
+aws organizations create-policy \
+                    --name "SandboxSCP" \
+                    --description "Sandbox Account Service Control Policy (SCP)" \
+                    --type SERVICE_CONTROL_POLICY \
+                    --content file:///$PWD/service-control-policies/sandbox-scp.json \
+                    --region ${AWS_REGION}
+                    
+aws organizations create-policy \
+                    --name "PlatformSCP" \
+                    --description "Platform Account Service Control Policy (SCP)" \
+                    --type SERVICE_CONTROL_POLICY \
+                    --content file:///$PWD/service-control-policies/platform-scp.json \
+                    --region ${AWS_REGION}
+                    
+aws organizations create-policy \
+                    --name "SecuritySCP" \
+                    --description "Security Account Service Control Policy (SCP)" \
+                    --type SERVICE_CONTROL_POLICY \
+                    --content file:///$PWD/service-control-policies/security-scp.json \
+                    --region ${AWS_REGION}
+                    
+aws organizations create-policy \
+                    --name "LoggingSCP" \
+                    --description "Logging Account Service Control Policy (SCP)" \
+                    --type SERVICE_CONTROL_POLICY \
+                    --content file:///$PWD/service-control-policies/logging-scp.json \
+                    --region ${AWS_REGION}
+                    
+aws organizations create-policy \
+                    --name "HostingSCP" \
+                    --description "Hosting Environment Service Control Policy (SCP)" \
+                    --type SERVICE_CONTROL_POLICY \
+                    --content file:///$PWD/service-control-policies/hosting-scp.json \
+                    --region ${AWS_REGION}
+
+#-------------------------------------------------------------------------------
+# Attach several SCPs to OUs. Rest of SCPs will be attached directly to
+# member accounts elsewhere.
+#-------------------------------------------------------------------------------
+
+# Attach Root Deny SCP to the Root OU
+
+#aws organizations attach-policy \
+#                    --policy-id <value> \
+#                    --target-id <value> \
+#                    --region ${AWS_REGION}
+
+# Attach Hosting SCP to the Hosting OU
+
+#aws organizations attach-policy \
+#                    --policy-id <value> \
+#                    --target-id <value> \
+#                    --region ${AWS_REGION}

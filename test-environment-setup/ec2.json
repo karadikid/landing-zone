@@ -3,127 +3,58 @@
     "Statement": [
         {
             "Effect": "Allow",
-            "Action": "cloudformation:CreateStack",
+            "Action": [
+                "cloudformation:CreateStack",
+                "cloudformation:DeleteStack",
+                "cloudformation:DescribeStacks",
+                "cloudformation:ListStacks"
+            ],
             "Resource": "*"
         },
         {
             "Effect": "Allow",
-            "Action": "cloudformation:DeleteStack",
+            "Action": [
+                "ec2:DescribeInstances"
+            ],
             "Resource": "*"
         },
         {
             "Effect": "Allow",
-            "Action": "cloudformation:DescribeStacks",
+            "Action": [
+                "iam:AddUserToGroup",
+                "iam:AttachGroupPolicy",
+                "iam:CreateGroup",
+                "iam:CreateLoginProfile",
+                "iam:CreatePolicy",
+                "iam:CreatePolicyVersion",
+                "iam:CreateRole",
+                "iam:CreateUser",
+                "iam:DeleteGroup",
+                "iam:DeleteUser",
+                "iam:DeleteLoginProfile",
+                "iam:DeletePolicy",
+                "iam:DeleteRole",
+                "iam:DetachGroupPolicy",
+                "iam:Get*",
+                "iam:List*",
+                "iam:RemoveUserFromGroup"
+            ],
             "Resource": "*"
         },
         {
             "Effect": "Allow",
-            "Action": "cloudformation:ListStacks",
+            "Action":[
+                "organizations:DescribeOrganization",
+                "organizations:CreateAccount",
+                "organizations:CreateOrganizationalUnit"
+            ],
             "Resource": "*"
         },
         {
             "Effect": "Allow",
-            "Action": "ec2:DescribeInstances",
-            "Resource": "*"
-        },
-        {
-            "Effect": "Allow",
-            "Action": "iam:AddUserToGroup",
-            "Resource": "*"
-        },
-        {
-            "Effect": "Allow",
-            "Action": "iam:AttachGroupPolicy",
-            "Resource": "*"
-        },
-        {
-            "Effect": "Allow",
-            "Action": "iam:CreateGroup",
-            "Resource": "*"
-        },
-        {
-            "Effect": "Allow",
-            "Action": "iam:CreateLoginProfile",
-            "Resource": "*"
-        },
-        {
-            "Effect": "Allow",
-            "Action": "iam:CreatePolicy",
-            "Resource": "*"
-        },
-        {
-            "Effect": "Allow",
-            "Action": "iam:CreatePolicyVersion",
-            "Resource": "*"
-        },
-        {
-            "Effect": "Allow",
-            "Action": "iam:CreateRole",
-            "Resource": "*"
-        },
-        {
-            "Effect": "Allow",
-            "Action": "iam:CreateUser",
-            "Resource": "*"
-        },
-        {
-            "Effect": "Allow",
-            "Action": "iam:DeleteGroup",
-            "Resource": "*"
-        },
-        {
-            "Effect": "Allow",
-            "Action": "iam:DeleteUser",
-            "Resource": "*"
-        },
-        {
-            "Effect": "Allow",
-            "Action": "iam:DeleteLoginProfile",
-            "Resource": "*"
-        },
-        {
-            "Effect": "Allow",
-            "Action": "iam:DeletePolicy",
-            "Resource": "*"
-        },
-        {
-            "Effect": "Allow",
-            "Action": "iam:DeleteRole",
-            "Resource": "*"
-        },
-        {
-            "Effect": "Allow",
-            "Action": "iam:DetachGroupPolicy",
-            "Resource": "*"
-        },
-        {
-            "Effect": "Allow",
-            "Action": "iam:Get*",
-            "Resource": "*"
-        },
-        {
-            "Effect": "Allow",
-            "Action": "iam:List*",
-            "Resource": "*"
-        },
-        {
-            "Effect": "Allow",
-            "Action": "iam:RemoveUserFromGroup",
-            "Resource": "*"
-        },
-        {
-            "Effect": "Allow",
-            "Action": "organizations:DescribeOrganization",
-            "Resource": "*"
-        },
-        {
-            "Effect": "Allow",
-            "Action": "organizations:CreateAccount",
-            "Resource": "*"
-        },
-        {
-            "Effect": "Allow",
-            "Action": "sts:AssumeRole",
+            "Action":[
+                "sts:AssumeRole"
+            ],
             "Resource": "*"
         }
     ]
