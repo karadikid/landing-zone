@@ -1,0 +1,22 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Deny",
+            "Action": [
+                "sumerian:*",
+                "gamelift:*",
+                "workdocs:*",
+                "workmail:*",
+                "mechanicalturk:*",
+                "crowd:*",
+                "chime:*",
+                "devicefarm:*",
+                "lightsail:*"
+            ],
+            "Resource": [
+                "*"
+            ]
+        }
+    ]
+}
