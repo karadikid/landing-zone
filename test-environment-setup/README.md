@@ -17,6 +17,10 @@ Ensure that you have at least the following email addresses that aren't already 
 
 Obtain a new or reuse a clean existing AWS account.
 
+As a best practice, ensure that Multi-factor Authentication (MFA) is set up for the root account:
+
+https://docs.aws.amazon.com/IAM/latest/UserGuide/id_root-user.html
+
 ## Add IAM Administrator User
 
 If your account doesn't already have a suitable administrator IAM user, add an IAM user to act an AWS administrator in the Master account.  Since the root account user cannot execute STS assume role functions, you'll need an IAM user to perform those tests.
