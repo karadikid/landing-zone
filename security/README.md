@@ -6,9 +6,9 @@ https://{redacted}.amazon.com/packages/Landing-zone/logs/heads/feature/default_n
 
 # TODO - AWS ProServ 
 1. Karadi's Deliverables
-  1) IAM policies  
-    1. role with permissions to:  
-      1) create S3 Buckets & Bucket Policies in the Logging/Auditing account  
+  1.1 IAM policies  
+    1.1.1. role with permissions to:  
+      1.1.1.1. create S3 Buckets & Bucket Policies in the Logging/Auditing account  
 
       2) create Cloudtrails
 
