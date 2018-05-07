@@ -6,14 +6,14 @@ https://{redacted}.amazon.com/packages/Landing-zone/logs/heads/feature/default_n
 
 # TODO - AWS ProServ 
 1. Karadi's Deliverables
-  1) IAM policies  
+  1. IAM policies  
     1. role with permissions to:  
-      1) create S3 Buckets & Bucket Policies in the Logging/Auditing account  
-      2) create Cloudtrails
-      3) run Cloudformation 
-  2) MFA delete policy on S3 Buckets in Logging/Auditing account     
+      1. create S3 Buckets & Bucket Policies in the Logging/Auditing account  
+      2. create Cloudtrails
+      3. run Cloudformation 
+  2. MFA delete policy on S3 Buckets in Logging/Auditing account     
 2. David's Deliverables  
-  1) not complete yet  
+  1. not complete yet  
 # Done:
 1. aws-landing-zone-s3-bucket.yml : create the bucket and bucket policy allowing cross account access 
 
