@@ -1,0 +1,84 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Create a S3 logging bucket in the logging account.
+
+Parameters:
+  BucketName:
+    Type: String
+    Description: Bucket name
+  PrimaryAccountId:
+    Description: Primary Account ID
+    Type: String
+  SharedServicesAccountId:
+    Description: Shared Services Account ID
+    Type: String
+  LoggingAccountId:
+    Description: Logging Account ID
+    Type: String
+  SecurityAccountId:
+    Description: Security Account ID
+    Type: String
+
+Resources:
+
+  S3Bucket:
+    DeletionPolicy: Retain
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Ref BucketName
+
+  S3BucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref S3Bucket
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Sid: AWSBucketPermissionsCheck
+            Effect: Allow
+            Principal:
+              Service:
+                - cloudtrail.amazonaws.com
+                - config.amazonaws.com
+            Action: s3:GetBucketAcl
+            Resource:
+              - !Sub "arn:aws:s3:::${S3Bucket}"
+          - Sid: AWSBucketDelivery
+            Effect: Allow
+            Principal:
+              Service:
+                - cloudtrail.amazonaws.com
+                - config.amazonaws.com
+            Action: s3:PutObject
+            Resource:
+                    - Fn::Join:
+                        - ""
+                        -
+                          - "arn:aws:s3:::"
+                          - !Ref "S3Bucket"
+                          - "/AWSLogs/"
+                          - !Ref PrimaryAccountId
+                          - "/*"
+                    - Fn::Join:
+                        - ""
+                        -
+                          - "arn:aws:s3:::"
+                          - !Ref "S3Bucket"
+                          - "/AWSLogs/"
+                          - !Ref SharedServicesAccountId
+                          - "/*"
+                    - Fn::Join:
+                        - ""
+                        -
+                          - "arn:aws:s3:::"
+                          - !Ref "S3Bucket"
+                          - "/AWSLogs/"
+                          - !Ref LoggingAccountId
+                          - "/*"
+                    - Fn::Join:
+                        - ""
+                        -
+                          - "arn:aws:s3:::"
+                          - !Ref "S3Bucket"
+                          - "/AWSLogs/"
+                          - !Ref SecurityAccountId
+                          - "/*"
