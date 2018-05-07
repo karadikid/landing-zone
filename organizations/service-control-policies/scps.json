@@ -16,13 +16,13 @@
         "description": "Security Account Service Control Policy (SCP)",
         "file_name":   "security-whitelist-scp.json"
     },
-    "LoggingSCP": {
-        "description": "Logging Account Service Control Policy (SCP)",
-        "file_name":   "logging-whitelist-scp.json"
+    "AuditSCP": {
+        "description": "Audit Account Service Control Policy (SCP)",
+        "file_name":   "audit-whitelist-scp.json"
     },
-    "ProdNonProdSCP": {
-        "description": "Prod and Non-Prod Hosting Environment Service Control Policy (SCP)",
-        "file_name":   "prod-non-prod-whitelist-scp.json",
-        "attach_ou":   "ProdNonProdOU"
+    "FormalHostingSCP": {
+        "description": "Prod, Pre-prod and Non-prod Hosting Environment Service Control Policy (SCP)",
+        "file_name":   "formal-hosting-whitelist-scp.json",
+        "attach_ou":   "FormalHostingOU"
     }
 }

@@ -196,8 +196,8 @@ def main(arguments):
     enable_root_ou_policy_type(args.region)
 
     print("Creating OUs")
-    prod_non_prod_ou_id = create_ou("ProdNonProdOU", args.region) 
-    print("prod_non_prod_ou_id: ", prod_non_prod_ou_id)
+    formal_hosting_ou_id = create_ou("FormalHostingOU", args.region) 
+    print("formal_hosting_ou_id: ", formal_hosting_ou_id)
     
     print("Creating SCPs")
     with open(args.scp_data_file) as data_file:    

@@ -1,0 +1,34 @@
+{
+    "Platform": {
+        "email":       "ckamps.platform@outlook.com",
+        "attach_scp":  "PlatformSCP",
+        "enable":      true
+    },
+    "Audit": {
+        "email":       "ckamps.logging@outlook.com",
+        "attach_scp":  "AuditSCP",
+        "enable":      false
+    },
+    "Security": {
+        "email":       "ckamps.sec@outlook.com",
+        "attach_scp":  "SecuritySCP",
+        "enable":      false
+    },
+    "Sandbox": {
+        "email":       "ckamps.sandbox@outlook.com",
+        "attach_scp":  "SandboxSCP",
+        "enable":      false
+    },
+    "NonProd": {
+        "email":       "ckamps.nonprod@outlook.com",
+        "enable":      false
+    },
+    "PreProd": {
+        "email":       "ckamps.preprod@outlook.com",
+        "enable":      false
+    },
+    "Prod": {
+        "email":       "ckamps.prod@outlook.com",
+        "enable":      false
+    }
+}
