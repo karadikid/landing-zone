@@ -6,12 +6,8 @@ https://{redacted}.amazon.com/packages/Landing-zone/logs/heads/feature/default_n
 
 # TODO - AWS ProServ 
 1. Karadi's Deliverables
-
   1. IAM policies  
-
     1. role with permissions to:  
-
-    
       1. create S3 Buckets & Bucket Policies in the Logging/Auditing account  
 
       2. create Cloudtrails
@@ -26,7 +22,6 @@ https://{redacted}.amazon.com/packages/Landing-zone/logs/heads/feature/default_n
 
 # Done:
 1. aws-landing-zone-s3-bucket.yml : create the bucket and bucket policy allowing cross account access 
-
 
 # Post Landing Zone Phase 1: Enhancements
 1. Scale Splunk ingestion by Enabling S3 Bucket NotificationConfiguration  
