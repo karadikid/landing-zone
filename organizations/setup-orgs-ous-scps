@@ -206,10 +206,11 @@ def main(arguments):
     for scp_name,scp_data in scps.items():
         scp_file_path = args.scp_path + "/" + scp_data['file_name']
         print(scp_file_path)
-        scp_id = create_service_control_policy(scp_name,
-                                               scp_data['description'],
-                                               scp_file_path,
-                                               args.region)
+        scp_id = create_service_control_policy(
+            scp_name,
+            scp_data['description'],
+            scp_file_path,
+            args.region)
         if scp_id:
             print('scp_id:', scp_id)
         

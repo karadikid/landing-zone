@@ -17,20 +17,21 @@ __version__ = '0.1'
 __author__ = '@author@'
 __email__ = '@email@'
 
-
 def create_account(
         account_name,
         account_email,
         account_role,
+        ou_name,
+        scp_name,
         access_to_billing,
-        organization_unit_id,
-        scp):
+        region):
 
     '''
         Create a new AWS account and add it to an organization
     '''
 
     client = boto3.client('organizations')
+    
     try:
         create_account_response = client.create_account(Email=account_email, AccountName=account_name,
                                                         RoleName=account_role,
@@ -105,7 +106,6 @@ def assume_role(account_id, account_role):
     # credentials that can be used to make subsequent API calls
     return assumedRoleObject['Credentials']
 
-
 def get_template(template_file):
 
     '''
@@ -115,10 +115,16 @@ def get_template(template_file):
     print("Reading resources from " + template_file)
     f = open(template_file, "r")
     cf_template = f.read()
+    
     return cf_template
 
-
-def deploy_resources(credentials, template, stack_name, stack_region, admin_username, admin_password):
+def deploy_resources(
+    credentials,
+    template,
+    stack_name,
+    stack_region,
+    admin_username,
+    admin_password):
 
     '''
         Create a CloudFormation stack of resources within the new account
@@ -193,14 +199,15 @@ def deploy_resources(credentials, template, stack_name, stack_region, admin_user
             time.sleep(10)
 
     stack = client.describe_stacks(StackName=stack_name)
+    
     return stack
-
 
 def main(arguments):
 
     parser = argparse.ArgumentParser(
         description=__doc__,
         formatter_class=argparse.RawDescriptionHelpFormatter)
+        
     parser.add_argument('--account_name', required=True)
     parser.add_argument('--account_email', required=True)
     parser.add_argument('--account_role',
@@ -209,29 +216,40 @@ def main(arguments):
                         default='baseline.yml')
     parser.add_argument('--stack_name',
                         default='Baseline')
-    parser.add_argument('--stack_region',
+    parser.add_argument('--region',
                         default='us-east-1')
     parser.add_argument('--admin_username', required=True)
     parser.add_argument('--admin_password', required=True)
+    parser.add_argument('--ou_name')
+    parser.add_argument('--scp_name')
     args = parser.parse_args(arguments)
 
     access_to_billing = "DENY"
-    organization_unit_id = None
-    scp = None
 
     print("Creating new account: " + args.account_name + " (" + args.account_email + ")")
-    account_id = create_account(args.account_name, args.account_email, args.account_role, access_to_billing, organization_unit_id, scp)
-    # Comment the above line and uncomment the below line to skip account creation and just test Cfn deployment (for testing)
-    # account_id = "481608673808"
+    account_id = create_account(
+        args.account_name,
+        args.account_email,
+        args.account_role,
+        args.ou_name,
+        args.scp_name,
+        access_to_billing,
+        args.region)
     print("Created acount: " + account_id)
+  
     credentials = assume_role(account_id, args.account_role)
-
+    
     print("Deploying resources from " + args.template_file + " as " + args.stack_name + " in " + args.stack_region)
     template = get_template(args.template_file)
-    stack = deploy_resources(credentials, template, args.stack_name, args.stack_region, args.admin_username, args.admin_password)
+    stack = deploy_resources(
+        credentials,
+        template,
+        args.stack_name,
+        args.stack_region,
+        args.admin_username,
+        args.admin_password)
     print(stack)
     print("Resources deployed for account " + account_id + " (" + args.account_email + ")")
-
 
 if __name__ == '__main__':
     sys.exit(main(sys.argv[1:]))
