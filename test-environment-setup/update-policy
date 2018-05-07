@@ -1,9 +1,15 @@
 #!/usr/bin/env bash
 
+# Helper script to ease the pain of updating a policy for the role attached
+# to the Cloud9 EC2 instance
+
+# You'll need to override the POLICY_ARN and perhaps the AWS_REGION to suit
+# your needs
+
 AWS_REGION=us-east-1
 POLICY_ARN=arn:aws:iam::421305190687:policy/lz-admin-ec2
 
 aws iam create-policy-version --policy-arn ${POLICY_ARN} \
-                              --policy-document file:///$PWD/ec2.json \
+                              --policy-document file:///$PWD/ec2-policy.json \
                               --set-as-default \
                               --region ${AWS_REGION}

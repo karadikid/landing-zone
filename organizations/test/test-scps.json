@@ -1,0 +1,7 @@
+{
+    "Test": {
+        "description": "Global Blacklist Service Control Policy (SCP)",
+        "file_name":   "global-blacklist-scp.json",
+        "attach_ou":   "ProdNonProdOU"
+    }
+}

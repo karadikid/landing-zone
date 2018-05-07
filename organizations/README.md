@@ -1,9 +1,11 @@
 # Create and Manage AWS Organizations
 
-Execute scripts to:
-* In root OU, enable Service Control Policies. This will apply the AWS managed FullAWSAcces SCP by default*
-* Create necessary Organizational Units (OUs)
-* Create Service Control Policies (SCPs)
-* Attach SCPs to OUs
+## TO DO
 
-Defer to member account scripts to attach SCPs to specific accounts.
+* Add user docs in this README file
+* Make script more resiliant
+* Build in more idempotency
+  * Consider addding --update option so that script will update exist SCPs
+* Create Inspec script to test
+
+

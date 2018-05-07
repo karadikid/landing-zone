@@ -1,69 +1,220 @@
-#!/usr/bin/env bash
+#!/usr/bin/env python
 
-AWS_REGION=us-east-1
-ROOT_ID=r-xaci
+from __future__ import print_function
+import argparse
+import boto3
+import botocore
+import json
+from pprint import pprint
+import sys
+import time
 
-aws organizations enable-policy-type --root-id ${ROOT_ID} --policy-type SERVICE_CONTROL_POLICY --region ${AWS_REGION}
+'''AWS Organizations Set Up Organizational Units (OUs) and Service Control Policies (SCPs)
 
-aws organizations create-organizational-unit --parent-id ${ROOT_ID} --name "HostingOU"
+This script modifies the root OU, creates children OUs, creates a set of Service Control Policies
+and attaches several of the SCPs to several of the OUs
 
-aws organizations create-policy \
-                    --name "GlobalBlacklistSCP" \
-                    --description "Global Blacklist Service Control Policy (SCP)" \
-                    --type SERVICE_CONTROL_POLICY \
-                    --content file:///$PWD/service-control-policies/global-blacklist-scp.json \
-                    --region ${AWS_REGION}
+'''
 
-aws organizations create-policy \
-                    --name "SandboxSCP" \
-                    --description "Sandbox Account Service Control Policy (SCP)" \
-                    --type SERVICE_CONTROL_POLICY \
-                    --content file:///$PWD/service-control-policies/sandbox-blacklist-scp.json \
-                    --region ${AWS_REGION}
-                    
-aws organizations create-policy \
-                    --name "PlatformSCP" \
-                    --description "Platform Account Service Control Policy (SCP)" \
-                    --type SERVICE_CONTROL_POLICY \
-                    --content file:///$PWD/service-control-policies/platform-whitelist-scp.json \
-                    --region ${AWS_REGION}
-                    
-aws organizations create-policy \
-                    --name "SecuritySCP" \
-                    --description "Security Account Service Control Policy (SCP)" \
-                    --type SERVICE_CONTROL_POLICY \
-                    --content file:///$PWD/service-control-policies/security-whitelist-scp.json \
-                    --region ${AWS_REGION}
-                    
-aws organizations create-policy \
-                    --name "LoggingSCP" \
-                    --description "Logging Account Service Control Policy (SCP)" \
-                    --type SERVICE_CONTROL_POLICY \
-                    --content file:///$PWD/service-control-policies/logging-whitelist-scp.json \
-                    --region ${AWS_REGION}
-                    
-aws organizations create-policy \
-                    --name "HostingSCP" \
-                    --description "Hosting Environment Service Control Policy (SCP)" \
-                    --type SERVICE_CONTROL_POLICY \
-                    --content file:///$PWD/service-control-policies/hosting-whitelist-scp.json \
-                    --region ${AWS_REGION}
+__version__ = '0.1'
+__author__ = '@author@'
+__email__ = '@email@'
 
-#-------------------------------------------------------------------------------
-# Attach several SCPs to OUs. Rest of SCPs will be attached directly to
-# member accounts elsewhere.
-#-------------------------------------------------------------------------------
+def attach_scp_to_ou(scp_id, ou_name, region):
 
-# Attach Global Blacklist SCP to the Root OU
+    '''
+        Attach Service Control Policy to Organizational Unit (OU)
+    '''
+    
+    if ou_name.lower() == "root":
+        ou_data = get_root_ou(region) 
+        ou_id = ou_data["Id"]
+    else:
+        ou_id = get_ou(ou_name, region) 
+    
 
-#aws organizations attach-policy \
-#                    --policy-id <value> \
-#                    --target-id <value> \
-#                    --region ${AWS_REGION}
+    client = boto3.client('organizations', region_name=region)
+      
+    try:
+        response = client.attach_policy(
+            PolicyId=scp_id,
+            TargetId=ou_id
+        )
+        
+    except botocore.exceptions.ClientError as e:
+        if e.response['Error']['Code'] == 'DuplicateOrganizationalUnitException':
+            print('Policy already attached: ', scp_id)
+            return
+        else:
+            print(e)
+            sys.exit(1)
+            
+    return
 
-# Attach Hosting SCP to the Hosting OU
+def create_ou(name, region):
 
-#aws organizations attach-policy \
-#                    --policy-id <value> \
-#                    --target-id <value> \
-#                    --region ${AWS_REGION}
+    '''
+        Create Organizational Unit - OU
+    '''
+
+    ou_data = get_root_ou(region) 
+    root_ou_id = ou_data["Id"]
+
+    client = boto3.client('organizations', region_name=region)
+      
+    try:
+        response = client.create_organizational_unit(
+            ParentId=root_ou_id,
+            Name=name
+        )
+        
+    except botocore.exceptions.ClientError as e:
+        if e.response['Error']['Code'] == 'DuplicateOrganizationalUnitException':
+            print('OU already exists: ', name)
+            return
+        else:
+            print(e)
+            sys.exit(1)
+            
+    ou_id = response.get('OrganizationalUnit').get('Id')
+    
+    return ou_id  
+
+def create_service_control_policy(
+        name,
+        description,
+        file,
+        region):
+
+    '''
+        Create Service Control Policy
+    '''
+
+    client = boto3.client('organizations', region_name=region)
+   
+    with open(file) as policy_file:    
+        policy = json.load(policy_file)
+    
+    try:
+        response = client.create_policy(
+            Content=json.dumps(policy),
+            Description=description,
+            Name=name,
+            Type='SERVICE_CONTROL_POLICY'
+        )
+        
+    except botocore.exceptions.ClientError as e:
+        if e.response['Error']['Code'] == 'DuplicatePolicyException':
+            print('Policy already exists: ', name)
+            return
+        else:
+            print(e)
+            sys.exit(1)
+
+    # TO DO: Is this a blocking operation? If so, we don't need a sleep and we don't need to poll
+    # for completion.
+    #time.sleep(3)
+
+    policy_id = response.get('Policy').get('PolicySummary').get('Id')
+    
+    return policy_id
+
+def enable_root_ou_policy_type(region):
+
+    '''
+        Enable SERVICE_CONTROL_POLICY type on root OU
+    '''
+
+    ou_data = get_root_ou(region) 
+    root_ou_id = ou_data["Id"]
+   
+    if not ou_data["PolicyTypes"]: 
+        try:
+            client = boto3.client('organizations', region_name=region)
+            client.enable_policy_type(
+                RootId=root_ou_id,
+                PolicyType='SERVICE_CONTROL_POLICY'
+            )
+        
+        except botocore.exceptions.ClientError as e:
+            print(e)
+            sys.exit(1)
+        
+    return
+
+def get_ou(name, region):
+
+    client = boto3.client('organizations', region_name=region)
+   
+    try:
+        ou_data = get_root_ou(region) 
+        root_ou_id = ou_data["Id"]
+    
+        response = client.list_organizational_units_for_parent(ParentId=root_ou_id)
+        
+    except botocore.exceptions.ClientError as e:
+        print(e)
+        sys.exit(1)    
+    
+    ous = response.get('OrganizationalUnits')
+    
+    for x in ous:
+        if x['Name'] == name:
+            ou_id = x['Id']
+    
+    if not ou_id:
+       raise ValueError('Cannot find OU name: ', name)
+    
+    return ou_id
+    
+def get_root_ou(region):
+
+    client = boto3.client('organizations', region_name=region)
+   
+    try:
+        ou_data = client.list_roots()['Roots'][0]
+        
+    except botocore.exceptions.ClientError as e:
+        print(e)
+        sys.exit(1)    
+    
+    return ou_data
+    
+def main(arguments):
+
+    parser = argparse.ArgumentParser(
+        description=__doc__,
+        formatter_class=argparse.RawDescriptionHelpFormatter)
+        
+    parser.add_argument('--scp_data_file', required=True)
+    parser.add_argument('--scp_path', required=True)
+    parser.add_argument('--region', default='us-east-1')
+    
+    args = parser.parse_args(arguments)
+
+    print("Enabling SERVICE_CONTROL_POLICY_TYPE on root OU")
+    enable_root_ou_policy_type(args.region)
+
+    print("Creating OUs")
+    prod_non_prod_ou_id = create_ou("ProdNonProdOU", args.region) 
+    print("prod_non_prod_ou_id: ", prod_non_prod_ou_id)
+    
+    print("Creating SCPs")
+    with open(args.scp_data_file) as data_file:    
+        scps = json.load(data_file)
+    
+    for scp_name,scp_data in scps.items():
+        scp_file_path = args.scp_path + "/" + scp_data['file_name']
+        print(scp_file_path)
+        scp_id = create_service_control_policy(scp_name,
+                                               scp_data['description'],
+                                               scp_file_path,
+                                               args.region)
+        if scp_id:
+            print('scp_id:', scp_id)
+        
+            if 'attach_ou' in scp_data:
+                attach_scp_to_ou(scp_id, scp_data['attach_ou'], args.region)
+
+if __name__ == '__main__':
+  sys.exit(main(sys.argv[1:]))

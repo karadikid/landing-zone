@@ -44,9 +44,15 @@
         {
             "Effect": "Allow",
             "Action":[
-                "organizations:DescribeOrganization",
+                "organizations:AttachPolicy",
+                "organizations:CreatePolicy",
                 "organizations:CreateAccount",
-                "organizations:CreateOrganizationalUnit"
+                "organizations:CreateOrganizationalUnit",
+                "organizations:DescribeOrganization",
+                "organizations:EnablePolicyType",
+                "organizations:ListOrganizationalUnitsForParent",
+                "organizations:ListPolicies",
+                "organizations:ListRoots"
             ],
             "Resource": "*"
         },

@@ -4,15 +4,16 @@
         {
             "Effect": "Deny",
             "Action": [
-                "sumerian:*",
-                "gamelift:*",
-                "workdocs:*",
-                "workmail:*",
-                "mechanicalturk:*",
-                "crowd:*",
+                "a4b:*",
                 "chime:*",
+                "crowd:*",
                 "devicefarm:*",
-                "lightsail:*"
+                "gamelift:*",
+                "lightsail:*",
+                "mechanicalturk:*",
+                "sumerian:*",
+                "workdocs:*",
+                "workmail:*"
             ],
             "Resource": [
                 "*"

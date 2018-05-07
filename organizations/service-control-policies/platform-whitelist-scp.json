@@ -2,17 +2,11 @@
     "Version": "2012-10-17",
     "Statement": [
         {
-            "Effect": "Deny",
+            "Effect": "Allow",
             "Action": [
-                "sumerian:*",
-                "gamelift:*",
-                "workdocs:*",
-                "workmail:*",
-                "mechanicalturk:*",
-                "crowd:*",
-                "chime:*",
-                "devicefarm:*",
-                "lightsail:*"
+                "cloudformation:*",
+                "ec2:*",
+                "s3:*"
             ],
             "Resource": [
                 "*"
