@@ -4,6 +4,13 @@ Description: Create administrative IAM group and user
 
 Metadata:
   AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: Administration Group and User Information
+        Parameters:
+          - pAdminGroupName
+          - pAdminUserName
+          - pAdminUserPassword
     ParameterLabels:
       pAdminGroupName:
         default: Admin Group Name
