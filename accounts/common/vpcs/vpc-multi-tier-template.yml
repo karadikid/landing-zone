@@ -4,6 +4,7 @@ Description: This is the CloudFormation script for a 2 or 3 tier Dev, Test, UAT,
   with a NatGateway.
 
 Metadata:
+
   AWS::CloudFormation::Interface:
     ParameterGroups:
     - Label:
@@ -21,11 +22,12 @@ Metadata:
       Parameters:
       - pTier1Create
       - pTier1Name
+      - pTier1CreateInternetGateway
       - pTier1Subnet1Cidr
       - pTier1Subnet2Cidr
       - pTier1Subnet3Cidr
     - Label:
-        default: VPC Tier 2 - Private Subnets
+        default: VPC Tier 2
       Parameters:
       - pTier2Create
       - pTier2Name
@@ -33,7 +35,7 @@ Metadata:
       - pTier2Subnet2Cidr
       - pTier2Subnet3Cidr
     - Label:
-        default: VPC Tier 3 - Private Subnets - Optional with 2 Tier
+        default: VPC Tier 3
       Parameters:
       - pTier3Create
       - pTier3Name
@@ -56,6 +58,8 @@ Metadata:
         default: Tier 1 Create?
       pTier1Name:
         default: Tier 1 Name
+      pTier1CreateInternetGateway:
+        default: Tier 1 Create Internet Gateway?
       pTier1Subnet1Cidr:
         default: Tier 1 AZ 1 - IP Address with CIDR
       pTier1Subnet2Cidr:
@@ -120,18 +124,39 @@ Parameters:
     Description: Whether Tier 1 should be created
     Default: false
     AllowedValues: [true, false]
+  
+  pTier1Name:
+    Type: String
+    Description: Tier 1 Name
+    Default: Tier1
+  
+  pTier1CreateInternetGateway:
+    Type: String
+    Description: Whether Tier 1 Internet Gateway should be created
+    Default: false
+    AllowedValues: [true, false]
 
   pTier2Create:
     Type: String
     Description: Whether Tier 2 should be created
     Default: true
     AllowedValues: [true, false]
+  
+  pTier2Name:
+    Type: String
+    Description: Tier 2 Name
+    Default: Tier2
 
   pTier3Create:
     Type: String
     Description: Whether Tier 3 should be created
     Default: true
     AllowedValues: [true, false]
+  
+  pTier3Name:
+    Type: String
+    Description: Tier 3 Name
+    Default: Tier3
     
   pNumAzs:
     Type: String
@@ -139,67 +164,92 @@ Parameters:
     AllowedValues:
     - 2
     - 3
-    
-  pTier2PrivateSubnet1Cidr:
+
+  pTier1Subnet1Cidr:
     Type: String
-    Description: Tier 2 Private Subnet AZ1  - Required
+    Description: Tier 1 Subnet AZ1
+    Default: 10.1.1.0/24
+    AllowedPattern: (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})
+    MinLength: 9
+    MaxLength: 18
+    ConstraintDescription: Must be a valid IP CIDR range of the form x.x.x.x/x
+
+  pTier1Subnet2Cidr:
+    Type: String
+    Description: Tier 1 Subnet AZ2
+    Default: 10.1.2.0/24
+    AllowedPattern: (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})
+    MinLength: 9
+    MaxLength: 18
+    ConstraintDescription: Must be a valid IP CIDR range of the form x.x.x.x/x
+
+  pTier1Subnet3Cidr:
+    Type: String
+    Description: Tier 1 Subnet AZ3
+    Default: 10.1.3.0/24
+    AllowedPattern: (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})|^$
+    ConstraintDescription: Must be a valid IP CIDR range of the form x.x.x.x/x
+   
+  pTier2Subnet1Cidr:
+    Type: String
+    Description: Tier 2 Subnet AZ1
     Default: 10.1.11.0/24
     AllowedPattern: (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})
     MinLength: 9
     MaxLength: 18
     ConstraintDescription: Must be a valid IP CIDR range of the form x.x.x.x/x
     
-  pTier2PrivateSubnet2Cidr:
+  pTier2Subnet2Cidr:
     Type: String
-    Description: Tier 2 Private Subnet AZ 2 - Required
+    Description: Tier 2 Subnet AZ 2
     Default: 10.1.12.0/24
     AllowedPattern: (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})
     MinLength: 9
     MaxLength: 18
     ConstraintDescription: Must be a valid IP CIDR range of the form x.x.x.x/x
   
-  pTier2PrivateSubnet3Cidr:
+  pTier2Subnet3Cidr:
     Type: String
-    Description: Tier 2 Private Subnet AZ 3 - Optional with 2 AZ
+    Description: Tier 2 Subnet AZ 3
     Default: 10.1.13.0/24
     AllowedPattern: (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})|^$
     ConstraintDescription: Must be a valid IP CIDR range of the form x.x.x.x/x
   
-  pTier3PrivateSubnet1Cidr:
+  pTier3Subnet1Cidr:
     Type: String
-    Description: Tier 3 Private Subnet AZ 1 - Optional with 2 Tier
+    Description: Tier 3 Subnet AZ 1
     Default: 10.1.21.0/24
     AllowedPattern: (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})|^$
     ConstraintDescription: Must be a valid IP CIDR range of the form x.x.x.x/x
   
-  pTier3PrivateSubnet2Cidr:
+  pTier3Subnet2Cidr:
     Type: String
-    Description: Tier 3 Private Subnet AZ 2 - Optional with 2 Tier
+    Description: Tier 3 Subnet AZ 2
     Default: 10.1.22.0/24
     AllowedPattern: (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})|^$
     ConstraintDescription: Must be a valid IP CIDR range of the form x.x.x.x/x
  
-  pTier3PrivateSubnet3Cidr:
+  pTier3Subnet3Cidr:
     Type: String
-    Description: Tier 3 Private Subnet AZ 3 - Optional with 2 Tier or 2 AZ
+    Description: Tier 3 Subnet AZ 3
     Default: 10.1.23.0/24
     AllowedPattern: (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})|^$
     ConstraintDescription: Must be a valid IP CIDR range of the form x.x.x.x/x
 
 Conditions:
-  # Allows Resource to be Created if equal to 2 Tiers
-  cCreate2Tiers: !Equals [ !Ref 'pNumTiers', 2 ]
+
+  cCreateTier1: !Equals [ !Ref 'pTier1Create', true ]
+  cCreateTier2: !Equals [ !Ref 'pTier2Create', true ]
+  cCreateTier3: !Equals [ !Ref 'pTier3Create', true ]
   
-  # Allows Resource to be created if Tier equal to 2 and Azs equals 3
-  cCreateTier2Az3: !And [ !Equals [ !Ref 'pNumTiers', 2 ], !Equals [ !Ref 'pNumAzs', 3 ] ]
+  cCreateTier1InternetGateway: !And [ !Equals [ !Ref 'pTier1CreateInternetGateway', true ], !Equals [ !Ref 'pTier1Create', true ] ]
   
-  # Allows Resource to be created if AZs equal to 3
-  cCreate3Azs: !Equals [ !Ref 'pNumAzs', 3 ]
-  
-  # Allows Resource to be created if AZ equal to 2 or 3
-  cCreate2or3Azs: !Or [ !Equals [ !Ref pNumAzs, 2], !Equals [ !Ref pNumAzs, 3 ] ]
+  cCreate3AZs: !Equals [ !Ref 'pNumAzs', 3 ]
+
+  cCreateTier1With3Azs: !And [ !Equals [ !Ref 'pTier1Create', true ], !Equals [ !Ref 'pNumAzs', 3 ] ]
 
 Resources:
+
   rVpc:
     Type: AWS::EC2::VPC
     Properties:
@@ -209,897 +259,159 @@ Resources:
       Tags:
       - Key: Name
         Value: !Sub '${pHostingEnvironmentName}-${pHostingEnvironmentVersion}-VPC'
-#
+
+#------------------------------------------------------------------------------
 # Tier 1
-#
-  rTier1InternetGateway: # Internet Gateway
+#------------------------------------------------------------------------------
+
+  rTier1InternetGateway:
     Type: AWS::EC2::InternetGateway
+    Condition: cCreateTier1InternetGateway
     Properties:
       Tags:
       - Key: Name
-        Value: !Sub '${pEnvironmentName}-${pEnvironmentVersion}-IGW'
-  rTier1InternetGatewayAttachment: # Attaching the Internet Gateway
+        Value: !Sub '${pHostingEnvironmentName}-${pHostingEnvironmentVersion}-IGW'
+
+  rTier1InternetGatewayAttachment:
     Type: AWS::EC2::VPCGatewayAttachment
+    Condition: cCreateTier1InternetGateway
     Properties:
       InternetGatewayId: !Ref 'rTier1InternetGateway'
       VpcId: !Ref 'rVpc'
-  rTier1EIPPublicSubnet1: # Tier 1 Elastic IP 1 For NAT Gateway 1
-    Type: AWS::EC2::EIP
-    Properties:
-      Domain: vpc
-  rTier1EIPPublicSubnet2: # Tier1 Elastic IP 2 For NAT Gateway 2
-    Type: AWS::EC2::EIP
-    Properties:
-      Domain: vpc
-  rTier1EIPPublicSubnet3: # Tier1 Elastic IP 3 For NAT Gateway 3
-    Type: AWS::EC2::EIP
-    Condition: cCreate3or4Azs
-    Properties:
-      Domain: vpc
-  rTier1EIPPublicSubnet4: # Tier1 Elastic IP 4 For NAT Gateway 4
-    Type: AWS::EC2::EIP
-    Condition: cCreate4Azs
-    Properties:
-      Domain: vpc
-  rNatInstanceImageIdFunctionRole: # Minimal permissions allows logging and ec2:DescribeImages
-    Type: AWS::IAM::Role
-    Condition: cCreateNatInstance
-    Properties:
-      AssumeRolePolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-        - Effect: Allow
-          Principal:
-            Service:
-            - lambda.amazonaws.com
-          Action:
-          - sts:AssumeRole
-      Path: "/"
-      Policies:
-      - PolicyName: root
-        PolicyDocument:
-          Version: '2012-10-17'
-          Statement:
-          - Effect: Allow
-            Action:
-            - logs:CreateLogGroup
-            - logs:CreateLogStream
-            - logs:PutLogEvents
-            Resource: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:*
-          - Effect: Allow
-            Action:
-            - ec2:DescribeImages
-            Resource: "*"
-  rNatInstanceImageId: # Custom resource for finding NAT Instance Image IDs, Reference using !GetAtt rNatInstanceImageId.Ami
-    Type: Custom::NatInstanceImageId
-    Condition: cCreateNatInstance
-    Properties:
-      ServiceToken: !GetAtt rNatInstanceImageIdFunction.Arn
-      Region: !Ref 'AWS::Region'
-  rNatInstanceImageIdFunction: # Function code to find Image IDs
-    Type: AWS::Lambda::Function
-    Condition: cCreateNatInstance
-    Properties:
-      Code:
-        ZipFile: |
-          import boto3
-          import cfnresponse
 
-          def lambda_handler(event, context):
-              ec2 = boto3.client('ec2', region_name=event['ResourceProperties']['Region'])
-              try:
-                  resp = ec2.describe_images(
-                      Filters=[
-                          {
-                              'Name': 'name',
-                              'Values': [ 'amzn-ami-vpc-nat-hvm-2017.09.1*' ]
-                          },
-                          {
-                              'Name': 'owner-alias',
-                              'Values': [ 'amazon' ]
-                          }
-                      ]
-                  )
-              except:
-                  cfnresponse.send(event, context, 'FAILED')
-
-              response_data = {}
-              response_data['Ami'] = resp['Images'][0]['ImageId']
-              cfnresponse.send(event, context, 'SUCCESS', response_data)
-      Handler: index.lambda_handler
-      Runtime: python3.6
-      Timeout: 30
-      Role: !GetAtt rNatInstanceImageIdFunctionRole.Arn
-  rNatInstanceSecurityGroupSSHIngress: # Allow SSH to NAT instance
-    Type: AWS::EC2::SecurityGroup
-    Condition: cCreateNatInstance
-    Properties:
-      GroupDescription: Allow SSH to NAT Instance
-      VpcId: !Ref 'rVpc'
-      SecurityGroupIngress:
-      - IpProtocol: tcp
-        FromPort: '22'
-        ToPort: '22'
-        CidrIp: !Ref 'pNatInstanceSourceCidrRange'
-  rNatInstanceSecurityGroupVPCIngress: # Allow 80/443 to NAT instance
-    Type: AWS::EC2::SecurityGroup
-    Condition: cCreateNatInstance
-    Properties:
-      GroupDescription: Allow TCP 80 & 443 to NAT Instance
-      VpcId: !Ref 'rVpc'
-      SecurityGroupIngress:
-      - IpProtocol: tcp
-        FromPort: '80'
-        ToPort: '80'
-        CidrIp: !Ref 'pVpcCidr'
-      - IpProtocol: tcp
-        FromPort: '443'
-        ToPort: '443'
-        CidrIp: !Ref 'pVpcCidr'
-  rTier1NatInstanceEniPublicSubnet1:
-      Type: AWS::EC2::NetworkInterface
-      Condition: cCreateNatInstance
-      Properties:
-          SubnetId: !Ref 'rTier1PublicSubnet1'
-          GroupSet:
-            - !Ref rNatInstanceSecurityGroupSSHIngress
-            - !Ref rNatInstanceSecurityGroupVPCIngress
-          Description: Interface for ProductionNat device
-          Tags:
-            - Key: Name
-              Value: !Sub '${pEnvironmentName}-${pEnvironmentVersion}-NAT-Instance-ENI-Public-Subnet-1'
-  rTier1AssociateEipNatInstancePublicSubnet1:
-    Type: AWS::EC2::EIPAssociation
-    Condition: cCreateNatInstance
-    DependsOn:
-      - rTier1NatInstancePublicSubnet1
-    Properties:
-      AllocationId: !GetAtt rTier1EIPPublicSubnet1.AllocationId
-      NetworkInterfaceId: !Ref rTier1NatInstanceEniPublicSubnet1
-  rTier1NatInstancePublicSubnet1:
-    Type: AWS::EC2::Instance
-    DependsOn: rNatInstanceImageId
-    Condition: cCreateNatInstance
-    Properties:
-      InstanceType: !Ref pNatInstanceType
-      SourceDestCheck: false
-      KeyName: !Ref pNatInstanceKeyPair
-      ImageId: !GetAtt rNatInstanceImageId.Ami
-      NetworkInterfaces:
-        - NetworkInterfaceId: !Ref rTier1NatInstanceEniPublicSubnet1
-          DeviceIndex: 0
-      Tags:
-        - Key: Name
-          Value: !Sub '${pEnvironmentName}-${pEnvironmentVersion}-NAT-Instance-Public-Subnet-1'
-      UserData: !Base64
-          'Fn::Sub': |
-              #!/bin/sh
-              echo 1 > /proc/sys/net/ipv4/ip_forward
-              echo 0 > /proc/sys/net/ipv4/conf/eth0/send_redirects
-              /sbin/iptables -t nat -A POSTROUTING -o eth0 -s 0.0.0.0/0 -j MASQUERADE
-              /sbin/iptables-save > /etc/sysconfig/iptables
-              mkdir -p /etc/sysctl.d/
-              cat <<EOF > /etc/sysctl.d/nat.conf
-              net.ipv4.ip_forward = 1
-              net.ipv4.conf.eth0.send_redirects = 0
-              EOF
-  rTier1NatInstanceEniPublicSubnet2:
-      Type: AWS::EC2::NetworkInterface
-      Condition: cCreateNatInstance
-      Properties:
-          SubnetId: !Ref 'rTier1PublicSubnet2'
-          GroupSet:
-            - !Ref rNatInstanceSecurityGroupSSHIngress
-            - !Ref rNatInstanceSecurityGroupVPCIngress
-          Description: Interface for ProductionNat device
-          Tags:
-            - Key: Name
-              Value: !Sub '${pEnvironmentName}-${pEnvironmentVersion}-NAT-Instance-ENI-Public-Subnet-2'
-  rTier1AssociateEipNatInstancePublicSubnet2:
-    Type: AWS::EC2::EIPAssociation
-    Condition: cCreateNatInstance
-    DependsOn:
-      - rTier1NatInstancePublicSubnet2
-    Properties:
-      AllocationId: !GetAtt rTier1EIPPublicSubnet2.AllocationId
-      NetworkInterfaceId: !Ref rTier1NatInstanceEniPublicSubnet2
-  rTier1NatInstancePublicSubnet2:
-    Type: AWS::EC2::Instance
-    DependsOn: rNatInstanceImageId
-    Condition: cCreateNatInstance
-    Properties:
-      InstanceType: !Ref pNatInstanceType
-      SourceDestCheck: false
-      KeyName: !Ref pNatInstanceKeyPair
-      ImageId: !GetAtt rNatInstanceImageId.Ami
-      NetworkInterfaces:
-        - NetworkInterfaceId: !Ref rTier1NatInstanceEniPublicSubnet2
-          DeviceIndex: 0
-      Tags:
-        - Key: Name
-          Value: !Sub '${pEnvironmentName}-${pEnvironmentVersion}-NAT-Instance-Public-Subnet-2'
-      UserData: !Base64
-          'Fn::Sub': |
-              #!/bin/sh
-              echo 1 > /proc/sys/net/ipv4/ip_forward
-              echo 0 > /proc/sys/net/ipv4/conf/eth0/send_redirects
-              /sbin/iptables -t nat -A POSTROUTING -o eth0 -s 0.0.0.0/0 -j MASQUERADE
-              /sbin/iptables-save > /etc/sysconfig/iptables
-              mkdir -p /etc/sysctl.d/
-              cat <<EOF > /etc/sysctl.d/nat.conf
-              net.ipv4.ip_forward = 1
-              net.ipv4.conf.eth0.send_redirects = 0
-              EOF
-  rTier1NatInstanceEniPublicSubnet3:
-      Type: AWS::EC2::NetworkInterface
-      Condition: cCreateNatInstanceAnd3or4Azs
-      Properties:
-          SubnetId: !Ref 'rTier1PublicSubnet3'
-          GroupSet:
-            - !Ref rNatInstanceSecurityGroupSSHIngress
-            - !Ref rNatInstanceSecurityGroupVPCIngress
-          Description: Interface for ProductionNat device
-          Tags:
-            - Key: Name
-              Value: !Sub '${pEnvironmentName}-${pEnvironmentVersion}-NAT-Instance-ENI-Public-Subnet-3'
-  rTier1AssociateEipNatInstancePublicSubnet3:
-    Type: AWS::EC2::EIPAssociation
-    Condition: cCreateNatInstanceAnd3or4Azs
-    DependsOn:
-      - rTier1NatInstancePublicSubnet3
-    Properties:
-      AllocationId: !GetAtt rTier1EIPPublicSubnet3.AllocationId
-      NetworkInterfaceId: !Ref rTier1NatInstanceEniPublicSubnet3
-  rTier1NatInstancePublicSubnet3:
-    Type: AWS::EC2::Instance
-    DependsOn: rNatInstanceImageId
-    Condition: cCreateNatInstanceAnd3or4Azs
-    Properties:
-      InstanceType: !Ref pNatInstanceType
-      SourceDestCheck: false
-      KeyName: !Ref pNatInstanceKeyPair
-      ImageId: !GetAtt rNatInstanceImageId.Ami
-      NetworkInterfaces:
-        - NetworkInterfaceId: !Ref rTier1NatInstanceEniPublicSubnet3
-          DeviceIndex: 0
-      Tags:
-        - Key: Name
-          Value: !Sub '${pEnvironmentName}-${pEnvironmentVersion}-NAT-Instance-Public-Subnet-3'
-      UserData: !Base64
-          'Fn::Sub': |
-              #!/bin/sh
-              echo 1 > /proc/sys/net/ipv4/ip_forward
-              echo 0 > /proc/sys/net/ipv4/conf/eth0/send_redirects
-              /sbin/iptables -t nat -A POSTROUTING -o eth0 -s 0.0.0.0/0 -j MASQUERADE
-              /sbin/iptables-save > /etc/sysconfig/iptables
-              mkdir -p /etc/sysctl.d/
-              cat <<EOF > /etc/sysctl.d/nat.conf
-              net.ipv4.ip_forward = 1
-              net.ipv4.conf.eth0.send_redirects = 0
-              EOF
-  rTier1NatInstanceEniPublicSubnet4:
-      Type: AWS::EC2::NetworkInterface
-      Condition: cCreateNatInstanceAnd4Azs
-      Properties:
-          SubnetId: !Ref 'rTier1PublicSubnet4'
-          GroupSet:
-            - !Ref rNatInstanceSecurityGroupSSHIngress
-            - !Ref rNatInstanceSecurityGroupVPCIngress
-          Description: Interface for ProductionNat device
-          Tags:
-            - Key: Name
-              Value: !Sub '${pEnvironmentName}-${pEnvironmentVersion}-NAT-Instance-ENI-Public-Subnet-4'
-  rTier1AssociateEipNatInstancePublicSubnet4:
-    Type: AWS::EC2::EIPAssociation
-    Condition: cCreateNatInstanceAnd4Azs
-    DependsOn:
-      - rTier1NatInstancePublicSubnet4
-    Properties:
-      AllocationId: !GetAtt rTier1EIPPublicSubnet4.AllocationId
-      NetworkInterfaceId: !Ref rTier1NatInstanceEniPublicSubnet4
-  rTier1NatInstancePublicSubnet4:
-    Type: AWS::EC2::Instance
-    DependsOn: rNatInstanceImageId
-    Condition: cCreateNatInstanceAnd4Azs
-    Properties:
-      InstanceType: !Ref pNatInstanceType
-      SourceDestCheck: false
-      KeyName: !Ref pNatInstanceKeyPair
-      ImageId: !GetAtt rNatInstanceImageId.Ami
-      NetworkInterfaces:
-        - NetworkInterfaceId: !Ref rTier1NatInstanceEniPublicSubnet4
-          DeviceIndex: 0
-      Tags:
-        - Key: Name
-          Value: !Sub '${pEnvironmentName}-${pEnvironmentVersion}-NAT-Instance-Public-Subnet-4'
-      UserData: !Base64
-          'Fn::Sub': |
-              #!/bin/sh
-              echo 1 > /proc/sys/net/ipv4/ip_forward
-              echo 0 > /proc/sys/net/ipv4/conf/eth0/send_redirects
-              /sbin/iptables -t nat -A POSTROUTING -o eth0 -s 0.0.0.0/0 -j MASQUERADE
-              /sbin/iptables-save > /etc/sysconfig/iptables
-              mkdir -p /etc/sysctl.d/
-              cat <<EOF > /etc/sysctl.d/nat.conf
-              net.ipv4.ip_forward = 1
-              net.ipv4.conf.eth0.send_redirects = 0
-              EOF
-
-  rTier1NatGatewayPublicSubnet1: # Tier 1 Nat Gateway 1
-    Type: AWS::EC2::NatGateway
-    DependsOn: rTier1InternetGatewayAttachment
-    Condition: cCreateNatGatway
-    Properties:
-      AllocationId: !GetAtt rTier1EIPPublicSubnet1.AllocationId
-      SubnetId: !Ref 'rTier1PublicSubnet1'
-      Tags:
-      - Key: Name
-        Value: !Sub '${pEnvironmentName}-${pEnvironmentVersion}-NATGW-Public-Subnet-1'
-  rTier1NatGatewayPublicSubnet2: # Tier 1 Nat Gateway 2
-    Type: AWS::EC2::NatGateway
-    DependsOn: rTier1InternetGatewayAttachment
-    Condition: cCreateNatGatway
-    Properties:
-      AllocationId: !GetAtt rTier1EIPPublicSubnet2.AllocationId
-      SubnetId: !Ref 'rTier1PublicSubnet2'
-      Tags:
-      - Key: Name
-        Value: !Sub '${pEnvironmentName}-${pEnvironmentVersion}-NATGW-Public-Subnet-2'
-  rTier1NatGatewayPublicSubnet3: # Tier 1 Nat Gateway 3
-    Type: AWS::EC2::NatGateway
-    DependsOn: rTier1InternetGatewayAttachment
-    Condition: cCreateNatGatwayAnd3or4Azs
-    Properties:
-      AllocationId: !GetAtt rTier1EIPPublicSubnet3.AllocationId
-      SubnetId: !Ref 'rTier1PublicSubnet3'
-      Tags:
-      - Key: Name
-        Value: !Sub '${pEnvironmentName}-${pEnvironmentVersion}-NATGW-Public-Subnet-3'
-  rTier1NatGatewayPublicSubnet4: # Tier 1 Nat Gateway 4
-    Type: AWS::EC2::NatGateway
-    Condition: cCreateNatGatwayAnd4Azs
-    DependsOn: rTier1InternetGatewayAttachment
-    Properties:
-      AllocationId: !GetAtt rTier1EIPPublicSubnet4.AllocationId
-      SubnetId: !Ref 'rTier1PublicSubnet4'
-      Tags:
-      - Key: Name
-        Value: !Sub '${pEnvironmentName}-${pEnvironmentVersion}-NATGW-Public-Subnet-4'
-
-
-  rTier1PublicSubnet1: # Tier 1 Public Subnet 1
+  rTier1Subnet1:
     Type: AWS::EC2::Subnet
+    Condition: cCreateTier1
     Properties:
       AvailabilityZone: !Select
                     - 0
                     - !GetAZs ''
-      CidrBlock: !Ref 'pTier1PublicSubnet1Cidr'
+      CidrBlock: !Ref 'pTier1Subnet1Cidr'
       VpcId: !Ref 'rVpc'
       Tags:
       - Key: Name
-        Value: !Sub '${pEnvironmentName}-${pEnvironmentVersion}-Public-Subnet-1'
-  rTier1PublicSubnet2: # Tier 1 Public Subnet 2
+        Value: !Sub '${pHostingEnvironmentName}-${pHostingEnvironmentVersion}-${pTier1Name}-Subnet-1'
+  
+  rTier1Subnet2:
     Type: AWS::EC2::Subnet
+    Condition: cCreateTier1
     Properties:
       AvailabilityZone: !Select
                     - 1
                     - !GetAZs ''
-      CidrBlock: !Ref 'pTier1PublicSubnet2Cidr'
+      CidrBlock: !Ref 'pTier1Subnet2Cidr'
       VpcId: !Ref 'rVpc'
       Tags:
       - Key: Name
-        Value: !Sub '${pEnvironmentName}-${pEnvironmentVersion}-Public-Subnet-2'
-  rTier1PublicSubnet3: # Tier 1 Public Subnet 3
+        Value: !Sub '${pHostingEnvironmentName}-${pHostingEnvironmentVersion}-${pTier1Name}-Subnet-2'
+ 
+  rTier1Subnet3:
     Type: AWS::EC2::Subnet
-    Condition: cCreate3or4Azs
+    Condition: cCreateTier1With3Azs
     Properties:
       AvailabilityZone: !Select
                     - 2
                     - !GetAZs ''
-      CidrBlock: !Ref 'pTier1PublicSubnet3Cidr'
+      CidrBlock: !Ref 'pTier1Subnet3Cidr'
       VpcId: !Ref 'rVpc'
       Tags:
       - Key: Name
-        Value: !Sub '${pEnvironmentName}-${pEnvironmentVersion}-Public-Subnet-3'
-  rTier1PublicSubnet4: # Tier 1 Public Subnet 4
-    Type: AWS::EC2::Subnet
-    Condition: cCreate4Azs
-    Properties:
-      AvailabilityZone: !Select
-                    - 3
-                    - !GetAZs ''
-      CidrBlock: !Ref 'pTier1PublicSubnet4Cidr'
-      VpcId: !Ref 'rVpc'
-      Tags:
-      - Key: Name
-        Value: !Sub '${pEnvironmentName}-${pEnvironmentVersion}-Public-Subnet-4'
-  rTier1PublicRouteTable1: # Tier 1 Public Route Table 1
-    Type: AWS::EC2::RouteTable
-    DependsOn: rTier1InternetGatewayAttachment
-    Properties:
-      VpcId: !Ref 'rVpc'
-      Tags:
-      - Key: Name
-        Value: !Sub '${pEnvironmentName}-${pEnvironmentVersion}-Tier-1-Public-Route-Table-1'
-  rTier1PublicRouteTable2: # Tier 1 Public Route Table 2
-    Type: AWS::EC2::RouteTable
-    DependsOn: rTier1InternetGatewayAttachment
-    Properties:
-      VpcId: !Ref 'rVpc'
-      Tags:
-      - Key: Name
-        Value: !Sub '${pEnvironmentName}-${pEnvironmentVersion}-Tier-1-Public-Route-Table-2'
-  rTier1PublicRouteTable3: # Tier 1 Public Route Table 3
-    Type: AWS::EC2::RouteTable
-    Condition: cCreate3or4Azs
-    DependsOn: rTier1InternetGatewayAttachment
-    Properties:
-      VpcId: !Ref 'rVpc'
-      Tags:
-      - Key: Name
-        Value: !Sub '${pEnvironmentName}-${pEnvironmentVersion}-Tier-1-Public-Route-Table-3'
-  rTier1PublicRouteTable4: # Tier 1 Public Route Table 4
-    Type: AWS::EC2::RouteTable
-    Condition: cCreate4Azs
-    DependsOn: rTier1InternetGatewayAttachment
-    Properties:
-      VpcId: !Ref 'rVpc'
-      Tags:
-      - Key: Name
-        Value: !Sub '${pEnvironmentName}-${pEnvironmentVersion}-Tier-1-Public-Route-Table-4'
-  rTier1PublicIgwRoute1: # Tier 1 Public Internet Gateway Route 1
-    Type: AWS::EC2::Route
-    Properties:
-      DestinationCidrBlock: 0.0.0.0/0
-      GatewayId: !Ref 'rTier1InternetGateway'
-      RouteTableId: !Ref 'rTier1PublicRouteTable1'
-  rTier1PublicIgwRoute2: # Tier 1 Public Internet Gateway Route 2
-    Type: AWS::EC2::Route
-    Properties:
-      DestinationCidrBlock: 0.0.0.0/0
-      GatewayId: !Ref 'rTier1InternetGateway'
-      RouteTableId: !Ref 'rTier1PublicRouteTable2'
-  rTier1PublicIgwRoute3: # Tier 1 Public Internet Gateway Route 3
-    Type: AWS::EC2::Route
-    Condition: cCreate3or4Azs
-    Properties:
-      DestinationCidrBlock: 0.0.0.0/0
-      GatewayId: !Ref 'rTier1InternetGateway'
-      RouteTableId: !Ref 'rTier1PublicRouteTable3'
-  rTier1PublicIgwRoute4: # Tier 1 Public Internet Gateway Route 4
-    Type: AWS::EC2::Route
-    Condition: cCreate4Azs
-    Properties:
-      DestinationCidrBlock: 0.0.0.0/0
-      GatewayId: !Ref 'rTier1InternetGateway'
-      RouteTableId: !Ref 'rTier1PublicRouteTable4'
-  rTier1PublicSubnet1RouteTableAssociation: # Associating IGW route to Public Route Table 1
-    Type: AWS::EC2::SubnetRouteTableAssociation
-    Properties:
-      RouteTableId: !Ref 'rTier1PublicRouteTable1'
-      SubnetId: !Ref 'rTier1PublicSubnet1'
-  rTier1PublicSubnet2RouteTableAssociation: # Associating IGW route to Public Route Table 2
-    Type: AWS::EC2::SubnetRouteTableAssociation
-    Properties:
-      RouteTableId: !Ref 'rTier1PublicRouteTable2'
-      SubnetId: !Ref 'rTier1PublicSubnet2'
-  rTier1PublicSubnet3RouteTableAssociation: # Associating IGW route to Public Route Table 3
-    Type: AWS::EC2::SubnetRouteTableAssociation
-    Condition: cCreate3or4Azs
-    Properties:
-      RouteTableId: !Ref 'rTier1PublicRouteTable3'
-      SubnetId: !Ref 'rTier1PublicSubnet3'
-  rTier1PublicSubnet4RouteTableAssociation: # Associating IGW route to Public Route Table 4
-    Type: AWS::EC2::SubnetRouteTableAssociation
-    Condition: cCreate4Azs
-    Properties:
-      RouteTableId: !Ref 'rTier1PublicRouteTable4'
-      SubnetId: !Ref 'rTier1PublicSubnet4'
-#
-# Tier 2
-#
-  rTier2PrivateSubnet1: # Tier 2 Private Subnet 1
-    Type: AWS::EC2::Subnet
-    Properties:
-      AvailabilityZone: !Select
-                    - 0
-                    - !GetAZs ''
-      CidrBlock: !Ref 'pTier2PrivateSubnet1Cidr'
-      VpcId: !Ref 'rVpc'
-      Tags:
-      - Key: Name
-        Value: !Sub '${pEnvironmentName}-${pEnvironmentVersion}-Tier-2-Private-Subnet-1'
-  rTier2PrivateSubnet2: # Tier 2 Private Subnet 2
-    Type: AWS::EC2::Subnet
-    Properties:
-      AvailabilityZone: !Select
-                    - 1
-                    - !GetAZs ''
-      CidrBlock: !Ref 'pTier2PrivateSubnet2Cidr'
-      VpcId: !Ref 'rVpc'
-      Tags:
-      - Key: Name
-        Value: !Sub '${pEnvironmentName}-${pEnvironmentVersion}-Tier-2-Private-Subnet-2'
-  rTier2PrivateSubnet3: # Tier 2 Private Subnet 3
-    Type: AWS::EC2::Subnet
-    Condition: cCreate3or4Azs
-    Properties:
-      AvailabilityZone: !Select
-                    - 2
-                    - !GetAZs ''
-      CidrBlock: !Ref 'pTier2PrivateSubnet3Cidr'
-      VpcId: !Ref 'rVpc'
-      Tags:
-      - Key: Name
-        Value: !Sub '${pEnvironmentName}-${pEnvironmentVersion}-Tier-2-Private-Subnet-3'
-  rTier2PrivateSubnet4: # Tier 2 Private Subnet 4
-    Type: AWS::EC2::Subnet
-    Condition: cCreate4Azs
-    Properties:
-      AvailabilityZone: !Select
-                    - 3
-                    - !GetAZs ''
-      CidrBlock: !Ref 'pTier2PrivateSubnet4Cidr'
-      VpcId: !Ref 'rVpc'
-      Tags:
-      - Key: Name
-        Value: !Sub '${pEnvironmentName}-${pEnvironmentVersion}-Tier-2-Private-Subnet-4'
-  rTier2PrivateRouteTable1: # Tier 2 Private Route Table 1
-    Type: AWS::EC2::RouteTable
-    DependsOn: rTier1InternetGatewayAttachment
-    Properties:
-      VpcId: !Ref 'rVpc'
-      Tags:
-      - Key: Name
-        Value: !Sub '${pEnvironmentName}-${pEnvironmentVersion}-Tier-2-Private-Route-Table-1'
-  rTier2PrivateRouteTable2: # Tier 2 Private Route Table 2
-    Type: AWS::EC2::RouteTable
-    DependsOn: rTier1InternetGatewayAttachment
-    Properties:
-      VpcId: !Ref 'rVpc'
-      Tags:
-      - Key: Name
-        Value: !Sub '${pEnvironmentName}-${pEnvironmentVersion}-Tier-2-Private-Route-Table-2'
-  rTier2PrivateRouteTable3: # Tier 2 Private Route Table 3
-    Type: AWS::EC2::RouteTable
-    Condition: cCreate3or4Azs
-    DependsOn: rTier1InternetGatewayAttachment
-    Properties:
-      VpcId: !Ref 'rVpc'
-      Tags:
-      - Key: Name
-        Value: !Sub '${pEnvironmentName}-${pEnvironmentVersion}-Tier-2-Private-Route-Table-3'
-  rTier2PrivateRouteTable4: # Tier 2 Private Route Table 4
-    Type: AWS::EC2::RouteTable
-    Condition: cCreate4Azs
-    DependsOn: rTier1InternetGatewayAttachment
-    Properties:
-      VpcId: !Ref 'rVpc'
-      Tags:
-      - Key: Name
-        Value: !Sub '${pEnvironmentName}-${pEnvironmentVersion}-Tier-2-Private-Route-Table-4'
+        Value: !Sub '${pHostingEnvironmentName}-${pHostingEnvironmentVersion}-${pTier1Name}-Subnet-3'
 
-  rTier2PrivateNatInstanceRoute1: # Tier 2 Private Nat Instance Route 1
-    Type: AWS::EC2::Route
-    Condition: cCreateNatInstance
+  rTier1RouteTable1:
+    Type: AWS::EC2::RouteTable
+    DependsOn: rTier1InternetGatewayAttachment
     Properties:
-      RouteTableId: !Ref 'rTier2PrivateRouteTable1'
-      DestinationCidrBlock: 0.0.0.0/0
-      InstanceId: !Ref 'rTier1NatInstancePublicSubnet1'
-  rTier2PrivateNatInstanceRoute2: # Tier 2 Private Nat Instance Route 2
-    Type: AWS::EC2::Route
-    Condition: cCreateNatInstance
-    Properties:
-      RouteTableId: !Ref 'rTier2PrivateRouteTable2'
-      DestinationCidrBlock: 0.0.0.0/0
-      InstanceId: !Ref 'rTier1NatInstancePublicSubnet2'
-  rTier2PrivateNatInstanceRoute3: # Tier 2 Private Nat Instance Route 3
-    Type: AWS::EC2::Route
-    Condition: cCreateNatInstanceAnd3or4Azs
-    Properties:
-      RouteTableId: !Ref 'rTier2PrivateRouteTable3'
-      DestinationCidrBlock: 0.0.0.0/0
-      InstanceId: !Ref 'rTier1NatInstancePublicSubnet3'
-  rTier2PrivateNatInstanceRoute4: # Tier 2 Private Nat Instance Route 4
-    Type: AWS::EC2::Route
-    Condition: cCreateNatInstanceAnd4Azs
-    Properties:
-      RouteTableId: !Ref 'rTier2PrivateRouteTable4'
-      DestinationCidrBlock: 0.0.0.0/0
-      InstanceId: !Ref 'rTier1NatInstancePublicSubnet4'
+      VpcId: !Ref 'rVpc'
+      Tags:
+      - Key: Name
+        Value: !Sub '${pHostingEnvironmentName}-${pHostingEnvironmentVersion}-${pTier1Name}-Route-Table-1'
 
-  rTier2PrivateNatGWRoute1: # Tier 2 Private Nat Gateway Route 1
-    Type: AWS::EC2::Route
-    Condition: cCreateNatGatway
-    Properties:
-      RouteTableId: !Ref 'rTier2PrivateRouteTable1'
-      DestinationCidrBlock: 0.0.0.0/0
-      NatGatewayId: !Ref 'rTier1NatGatewayPublicSubnet1'
-  rTier2PrivateNatGWRoute2: # Tier 2 Private Nat Gateway Route 2
-    Type: AWS::EC2::Route
-    Condition: cCreateNatGatway
-    Properties:
-      RouteTableId: !Ref 'rTier2PrivateRouteTable2'
-      DestinationCidrBlock: 0.0.0.0/0
-      NatGatewayId: !Ref 'rTier1NatGatewayPublicSubnet2'
-  rTier2PrivateNatGWRoute3: # Tier 2 Private Nat Gateway Route 3
-    Type: AWS::EC2::Route
-    Condition: cCreateNatGatwayAnd3or4Azs
-    Properties:
-      RouteTableId: !Ref 'rTier2PrivateRouteTable3'
-      DestinationCidrBlock: 0.0.0.0/0
-      NatGatewayId: !Ref 'rTier1NatGatewayPublicSubnet3'
-  rTier2PrivateNatGWRoute4: # Tier 2 Private Nat Gateway Route 4
-    Type: AWS::EC2::Route
-    Condition: cCreateNatGatwayAnd4Azs
-    Properties:
-      RouteTableId: !Ref 'rTier2PrivateRouteTable4'
-      DestinationCidrBlock: 0.0.0.0/0
-      NatGatewayId: !Ref 'rTier1NatGatewayPublicSubnet4'
-  rTier2PrivateSubnetRouteTableAssociation1: # Tier 2 Associating Nat Gateway Route 1 to Private Route Table 1
-    Type: AWS::EC2::SubnetRouteTableAssociation
-    Properties:
-      RouteTableId: !Ref 'rTier2PrivateRouteTable1'
-      SubnetId: !Ref 'rTier2PrivateSubnet1'
-  rTier2PrivateSubnetRouteTableAssociation2: # Tier 2 Associating Nat Gateway Route 2 to Private Route Table 2
-    Type: AWS::EC2::SubnetRouteTableAssociation
-    Properties:
-      RouteTableId: !Ref 'rTier2PrivateRouteTable2'
-      SubnetId: !Ref 'rTier2PrivateSubnet2'
-  rTier2PrivateSubnetRouteTableAssociation3: # Tier 2 Associating Nat Gateway Route 3 to Private Route Table 3
-    Type: AWS::EC2::SubnetRouteTableAssociation
-    Condition: cCreate3or4Azs
-    Properties:
-      RouteTableId: !Ref 'rTier2PrivateRouteTable3'
-      SubnetId: !Ref 'rTier2PrivateSubnet3'
-  rTier2PrivateSubnetRouteTableAssociation4: # Tier 2 Associating Nat Gateway Route 4 to Private Route Table 4
-    Type: AWS::EC2::SubnetRouteTableAssociation
-    Condition: cCreate4Azs
-    Properties:
-      RouteTableId: !Ref 'rTier2PrivateRouteTable4'
-      SubnetId: !Ref 'rTier2PrivateSubnet4'
-#
-# Tier 3
-#
-  rTier3PrivateSubnet1: # Tier 3 Private Subnet 1
-    Type: AWS::EC2::Subnet
-    Condition: cCreate3Tiers
-    Properties:
-      AvailabilityZone: !Select
-                    - 0
-                    - !GetAZs ''
-      CidrBlock: !Ref 'pTier3PrivateSubnet1Cidr'
-      VpcId: !Ref 'rVpc'
-      Tags:
-      - Key: Name
-        Value: !Sub '${pEnvironmentName}-${pEnvironmentVersion}-Tier-3-Private-Subnet-1'
-  rTier3PrivateSubnet2: # Tier 3 Private Subnet 2
-    Type: AWS::EC2::Subnet
-    Condition: cCreate3Tiers
-    Properties:
-      AvailabilityZone: !Select
-                    - 1
-                    - !GetAZs ''
-      CidrBlock: !Ref 'pTier3PrivateSubnet2Cidr'
-      VpcId: !Ref 'rVpc'
-      Tags:
-      - Key: Name
-        Value: !Sub '${pEnvironmentName}-${pEnvironmentVersion}-Tier-3-Private-Subnet-2'
-  rTier3PrivateSubnet3: # Tier 3 Private Subnet 3
-    Type: AWS::EC2::Subnet
-    Condition: cCreateTier3Az3orAz4
-    Properties:
-      AvailabilityZone: !Select
-                    - 2
-                    - !GetAZs ''
-      CidrBlock: !Ref 'pTier3PrivateSubnet3Cidr'
-      VpcId: !Ref 'rVpc'
-      Tags:
-      - Key: Name
-        Value: !Sub '${pEnvironmentName}-${pEnvironmentVersion}-Tier-3-Private-Subnet-3'
-  rTier3PrivateSubnet4: # Tier 3 Private Subnet 4
-    Type: AWS::EC2::Subnet
-    Condition: cCreateTier3Az4
-    Properties:
-      AvailabilityZone: !Select
-                    - 3
-                    - !GetAZs ''
-      CidrBlock: !Ref 'pTier3PrivateSubnet4Cidr'
-      VpcId: !Ref 'rVpc'
-      Tags:
-      - Key: Name
-        Value: !Sub '${pEnvironmentName}-${pEnvironmentVersion}-Tier-3-Private-Subnet-4'
-  rTier3PrivateRouteTable1: # Tier 3 Private Route Table 1
+  rTier1RouteTable2:
     Type: AWS::EC2::RouteTable
-    Condition: cCreate3Tiers
     DependsOn: rTier1InternetGatewayAttachment
     Properties:
       VpcId: !Ref 'rVpc'
       Tags:
       - Key: Name
-        Value: !Sub '${pEnvironmentName}-${pEnvironmentVersion}-Tier-3-Private-Route-Table-1'
-  rTier3PrivateRouteTable2: # Tier 3 Private Route Table 2
+        Value: !Sub '${pHostingEnvironmentName}-${pHostingEnvironmentVersion}-${pTier1Name}-Route-Table-2'
+
+  rTier1RouteTable3:
     Type: AWS::EC2::RouteTable
-    Condition: cCreate3Tiers
+    Condition: cCreateTier1With3Azs
     DependsOn: rTier1InternetGatewayAttachment
     Properties:
       VpcId: !Ref 'rVpc'
       Tags:
       - Key: Name
-        Value: !Sub '${pEnvironmentName}-${pEnvironmentVersion}-Tier-3-Private-Route-Table-1'
-  rTier3PrivateRouteTable3: # Tier 3 Private Route Table 3
-    Type: AWS::EC2::RouteTable
-    Condition: cCreateTier3Az3orAz4
-    DependsOn: rTier1InternetGatewayAttachment
-    Properties:
-      VpcId: !Ref 'rVpc'
-      Tags:
-      - Key: Name
-        Value: !Sub '${pEnvironmentName}-${pEnvironmentVersion}-Tier-3-Private-Route-Table-3'
-  rTier3PrivateRouteTable4: # Tier 3 Private Route Table 4
-    Type: AWS::EC2::RouteTable
-    Condition: cCreateTier3Az4
-    DependsOn: rTier1InternetGatewayAttachment
-    Properties:
-      VpcId: !Ref 'rVpc'
-      Tags:
-      - Key: Name
-        Value: !Sub '${pEnvironmentName}-${pEnvironmentVersion}-Tier-3-Private-Route-Table-4'
-  rTier3PrivateNatGWRoute1: # Tier 3 Private Nat Gateway Route 1
+        Value: !Sub '${pHostingEnvironmentName}-${pHostingEnvironmentVersion}-${pTier1Name}-Route-Table-3'
+
+  rTier1IgwRoute1:
     Type: AWS::EC2::Route
-    Condition: cCreateNatGatwayAnd3Tiers
     Properties:
-      RouteTableId: !Ref 'rTier3PrivateRouteTable1'
       DestinationCidrBlock: 0.0.0.0/0
-      NatGatewayId: !Ref 'rTier1NatGatewayPublicSubnet1'
-  rTier3PrivateNatGWRoute2: # Tier 3 Private Nat Gateway Route 2
+      GatewayId: !Ref 'rTier1InternetGateway'
+      RouteTableId: !Ref 'rTier1RouteTable1'
+
+  rTier1IgwRoute2:
     Type: AWS::EC2::Route
-    Condition: cCreateNatGatwayAnd3Tiers
     Properties:
-      RouteTableId: !Ref 'rTier3PrivateRouteTable2'
       DestinationCidrBlock: 0.0.0.0/0
-      NatGatewayId: !Ref 'rTier1NatGatewayPublicSubnet2'
-  rTier3PrivateNatGWRoute3: # Tier 3 Private Nat Gateway Route 3
+      GatewayId: !Ref 'rTier1InternetGateway'
+      RouteTableId: !Ref 'rTier1RouteTable2'
+
+  rTier1IgwRoute3:
     Type: AWS::EC2::Route
-    Condition: cCreateNatGatwayAndTier3Az3orAz4
+    Condition: cCreateTier1With3Azs
     Properties:
-      RouteTableId: !Ref 'rTier3PrivateRouteTable3'
       DestinationCidrBlock: 0.0.0.0/0
-      NatGatewayId: !Ref 'rTier1NatGatewayPublicSubnet3'
-  rTier3PrivateNatGWRoute4: # Tier 3 Private Nat Gateway Route 4
-    Type: AWS::EC2::Route
-    Condition: cCreateNatGatwayAndTier3Az4
-    Properties:
-      RouteTableId: !Ref 'rTier3PrivateRouteTable4'
-      DestinationCidrBlock: 0.0.0.0/0
-      NatGatewayId: !Ref 'rTier1NatGatewayPublicSubnet4'
-  rTier3PrivateNatInstanceRoute1: # Tier 3 Private Nat Instance Route 1
-    Type: AWS::EC2::Route
-    Condition: cCreateNatInstanceAnd3Tiers
-    Properties:
-      RouteTableId: !Ref 'rTier3PrivateRouteTable1'
-      DestinationCidrBlock: 0.0.0.0/0
-      InstanceId: !Ref 'rTier1NatInstancePublicSubnet1'
-  rTier3PrivateNatInstanceRoute2: # Tier 3 Private Nat Instance Route 2
-    Type: AWS::EC2::Route
-    Condition: cCreateNatInstanceAnd3Tiers
-    Properties:
-      RouteTableId: !Ref 'rTier3PrivateRouteTable2'
-      DestinationCidrBlock: 0.0.0.0/0
-      InstanceId: !Ref 'rTier1NatInstancePublicSubnet2'
-  rTier3PrivateNatInstanceRoute3: # Tier 3 Private Nat Instance Route 3
-    Type: AWS::EC2::Route
-    Condition: cCreateNatInstanceAndTier3Az3orAz4
-    Properties:
-      RouteTableId: !Ref 'rTier3PrivateRouteTable3'
-      DestinationCidrBlock: 0.0.0.0/0
-      InstanceId: !Ref 'rTier1NatInstancePublicSubnet3'
-  rTier3PrivateNatInstanceRoute4: # Tier 3 Private Nat Instance Route 4
-    Type: AWS::EC2::Route
-    Condition: cCreateNatInstanceAndTier3Az4
-    Properties:
-      RouteTableId: !Ref 'rTier3PrivateRouteTable4'
-      DestinationCidrBlock: 0.0.0.0/0
-      InstanceId: !Ref 'rTier1NatInstancePublicSubnet4'
-  rTier3PrivateSubnetRouteTableAssociation1: # Tier 3 Associating Nat Gateway Route 1 to Private Route Table 1
+      GatewayId: !Ref 'rTier1InternetGateway'
+      RouteTableId: !Ref 'rTier1RouteTable3'
+
+  rTier1Subnet1RouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
-    Condition: cCreate3Tiers
     Properties:
-      RouteTableId: !Ref 'rTier3PrivateRouteTable1'
-      SubnetId: !Ref 'rTier3PrivateSubnet1'
-  rTier3PrivateSubnetRouteTableAssociation2: # Tier 3 Associating Nat Gateway Route 2 to Private Route Table 2
+      RouteTableId: !Ref 'rTier1RouteTable1'
+      SubnetId: !Ref 'rTier1Subnet1'
+
+  rTier1Subnet2RouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
-    Condition: cCreate3Tiers
     Properties:
-      RouteTableId: !Ref 'rTier3PrivateRouteTable2'
-      SubnetId: !Ref 'rTier3PrivateSubnet2'
-  rTier3PrivateSubnetRouteTableAssociation3: # Tier 3 Associating Nat Gateway Route 3 to Private Route Table 3
+      RouteTableId: !Ref 'rTier1RouteTable2'
+      SubnetId: !Ref 'rTier1Subnet2'
+
+  rTier1Subnet3RouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
-    Condition: cCreateTier3Az3orAz4
+    Condition: cCreateTier1With3Azs
     Properties:
-      RouteTableId: !Ref 'rTier3PrivateRouteTable3'
-      SubnetId: !Ref 'rTier3PrivateSubnet3'
-  rTier3PrivateSubnetRouteTableAssociation4: # Tier 3 Associating Nat Gateway Route 4 to Private Route Table 4
-    Type: AWS::EC2::SubnetRouteTableAssociation
-    Condition: cCreateTier3Az4
-    Properties:
-      RouteTableId: !Ref 'rTier3PrivateRouteTable4'
-      SubnetId: !Ref 'rTier3PrivateSubnet4'
-Outputs: # CloudFormation Outputs Section
-  oVpcId: # Output for Amazon VPC ID.
+      RouteTableId: !Ref 'rTier1RouteTable3'
+      SubnetId: !Ref 'rTier1Subnet3'
+
+Outputs:
+
+  oVpcId:
     Description: VpcId
     Value: !Ref 'rVpc'
     Export:
-      Name: !Sub '${pEnvironmentName}-${pEnvironmentVersion}-oVpcId'
-  oTier1PublicSubnet1: # Output for Tier 1 Public Subnet 1 ID
-    Description: Tier 1 Public Subnet 1
-    Value: !Ref 'rTier1PublicSubnet1'
+      Name: !Sub '${pHostingEnvironmentName}-${pHostingEnvironmentVersion}-oVpcId'
+
+  oTier1Subnet1:
+    Description: Tier 1 Subnet 1
+    Value: !Ref 'rTier1Subnet1'
+    Condition: cCreateTier1
     Export:
-      Name: !Sub '${pEnvironmentName}-${pEnvironmentVersion}-oTier1PublicSubnet1'
-  oTier1PublicSubnet2: # Output for Tier 1 Public Subnet 2 ID
-    Description: Tier 1 Public Subnet 2
-    Value: !Ref 'rTier1PublicSubnet2'
+      Name: !Sub '${pHostingEnvironmentName}-${pHostingEnvironmentVersion}-${pTier1Name}-oTier1Subnet1'
+
+  oTier1Subnet2:
+    Description: Tier 1 Subnet 2
+    Value: !Ref 'rTier1Subnet2'
+    Condition: cCreateTier1
     Export:
-      Name: !Sub '${pEnvironmentName}-${pEnvironmentVersion}-oTier1PublicSubnet2'
-  oTier1PublicSubnet3: # Output for Tier 1 Public Subnet 3 ID
-    Description: Tier 1 Public Subnet 3
-    Value: !Ref 'rTier1PublicSubnet3'
-    Condition: cCreate3or4Azs
+      Name: !Sub '${pHostingEnvironmentName}-${pHostingEnvironmentVersion}-${pTier1Name}-oTier1Subnet2'
+
+  oTier1Subnet3:
+    Description: Tier 1 Subnet 3
+    Value: !Ref 'rTier1Subnet3'
+    Condition: cCreateTier1
     Export:
-      Name: !Sub '${pEnvironmentName}-${pEnvironmentVersion}-oTier1PublicSubnet3'
-  oTier1PublicSubnet4: # Output for Tier 1 Public Subnet 4 ID
-    Description: Tier 1 Public Subnet 4
-    Value: !Ref 'rTier1PublicSubnet4'
-    Condition: cCreate4Azs
-    Export:
-      Name: !Sub '${pEnvironmentName}-${pEnvironmentVersion}-oTier1PublicSubnet4'
-  oTier2PrivateSubnet1: # Output for Tier 2 Private Subnet 1 ID
-    Description: Tier 2 Private Subnet 1
-    Value: !Ref 'rTier2PrivateSubnet1'
-    Export:
-      Name: !Sub '${pEnvironmentName}-${pEnvironmentVersion}-oTier2PrivateSubnet1'
-  oTier2PrivateSubnet2: # Output for Tier 2 Private Subnet 2 ID
-    Description: Tier 2 Private Subnet 2
-    Value: !Ref 'rTier2PrivateSubnet2'
-    Export:
-      Name: !Sub '${pEnvironmentName}-${pEnvironmentVersion}-oTier2PrivateSubnet2'
-  oTier2PrivateSubnet3: # Output for Tier 2 Private Subnet 3 ID
-    Description: Tier 2 Private Subnet 3
-    Value: !Ref 'rTier2PrivateSubnet3'
-    Condition: cCreate3or4Azs
-    Export:
-      Name: !Sub '${pEnvironmentName}-${pEnvironmentVersion}-oTier2PrivateSubnet3'
-  oTier2PrivateSubnet4: # Output for Tier 2 Private Subnet 4 ID
-    Description: Tier 2 Private Subnet 4
-    Value: !Ref 'rTier2PrivateSubnet4'
-    Condition: cCreate4Azs
-    Export:
-      Name: !Sub '${pEnvironmentName}-${pEnvironmentVersion}-oTier2PrivateSubnet4'
-  oTier3PrivateSubnet1: # Output for Tier 3 Private Subnet 1 ID
-    Description: Tier 3 Private Subnet 1
-    Value: !Ref 'rTier3PrivateSubnet1'
-    Condition: cCreate3Tiers
-    Export:
-      Name: !Sub '${pEnvironmentName}-${pEnvironmentVersion}-oTier3PrivateSubnet1'
-  oTier3PrivateSubnet2: # Output for Tier 3 Private Subnet 2 ID
-    Description: Tier 3 Private Subnet 2
-    Value: !Ref 'rTier3PrivateSubnet2'
-    Condition: cCreate3Tiers
-    Export:
-      Name: !Sub '${pEnvironmentName}-${pEnvironmentVersion}-oTier3PrivateSubnet2'
-  oTier3PrivateSubnet3: # Output for Tier 3 Private Subnet 3 ID
-    Description: Tier 3 Private Subnet 3
-    Value: !Ref 'rTier3PrivateSubnet3'
-    Condition: cCreateTier3Az3orAz4
-    Export:
-      Name: !Sub '${pEnvironmentName}-${pEnvironmentVersion}-oTier3PrivateSubnet3'
-  oTier3PrivateSubnet4: # Output for Tier 3 Private Subnet 4 ID
-    Description: Tier 3 Private Subnet 4
-    Value: !Ref 'rTier3PrivateSubnet4'
-    Condition: cCreateTier3Az4
-    Export:
-      Name: !Sub '${pEnvironmentName}-${pEnvironmentVersion}-oTier3PrivateSubnet4'
-  oAmiId:
-    Description: NAT AMI ID from Lambda Function.
-    Value: !GetAtt rNatInstanceImageId.Ami
-    Condition: cCreateNatInstance
+      Name: !Sub '${pHostingEnvironmentName}-${pHostingEnvironmentVersion}-${pTier1Name}-oTier1Subnet3'

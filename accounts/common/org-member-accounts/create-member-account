@@ -347,7 +347,6 @@ def main(arguments):
     access_to_billing = "DENY"
 
     print("Creating new account: " + args.account_name + " (" + args.account_email + ")")
-    #account_id = create_account(
     account_id = create_account(
         args.account_name,
         args.account_email,
@@ -356,7 +355,6 @@ def main(arguments):
         args.scp_name,
         access_to_billing,
         args.region)
-  
    
     if args.template_file is not None: 
         credentials = assume_role(account_id, args.account_role)
