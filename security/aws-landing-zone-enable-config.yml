@@ -18,7 +18,7 @@ Metadata:
       - Label:
           default: Delivery Notifications
         Parameters:
-          - TopicArn
+          - NotifyEmail
     ParameterLabels:
       AllSupported:
         default: Support all resource types
@@ -30,25 +30,25 @@ Metadata:
         default: Configuration delivery channel name
       Frequency:
         default: Snapshot delivery frequency
-      TopicArn:
-        default: SNS topic ARN
+      NotifyEmail:
+        default: Notify Email
 
 Parameters:
   AllSupported:
     Type: String
-    Default: 'True'
     Description: Indicates whether to record all supported resource types.
     AllowedValues:
       - 'True'
       - 'False'
+    Default: 'True'
 
   IncludeGlobalResourceTypes:
     Type: String
-    Default: 'True'
     Description: Indicates whether AWS Config records all supported global resource types.
     AllowedValues:
       - 'True'
       - 'False'
+    Default: 'True'
 
   ResourceTypes:
     Type: CommaDelimitedList
@@ -57,12 +57,10 @@ Parameters:
 
   DeliveryChannelName:
     Type: String
-    Default: 'DeliveryChannel'
     Description: The name of the delivery channel.
 
   Frequency:
     Type: String
-    Default: 24hours
     Description: The frequency with which AWS Config delivers configuration snapshots.
     AllowedValues:
       - 1hour
@@ -71,14 +69,12 @@ Parameters:
       - 12hours
       - 24hours
 
-  TopicArn:
+  NotifyEmail:
     Type: String
-    Default: ''
-    Description: The Amazon Resource Name (ARN) of the Amazon Simple Notification Service (Amazon SNS) topic that AWS Config delivers notifications to.
+    Description: The email for AWS Config service to deliver notifications.
 
   BucketName:
     Type: String
-    Default: ''
     Description: Bucket name from the Logging Account
 
 Conditions:
@@ -99,6 +95,30 @@ Mappings:
       24hours : TwentyFour_Hours
 
 Resources:
+
+  ConfigTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      DisplayName: AWS Config Notification Topic
+      Subscription:
+      - Protocol: email
+        Endpoint: !Ref NotifyEmail
+
+  ConfigTopicPolicy:
+    Type: AWS::SNS::TopicPolicy
+    Properties:
+      Topics:
+        - !Ref ConfigTopic
+      PolicyDocument:
+        Statement:
+          - Sid: AWSConfigSNSPolicy
+            Action:
+              - sns:Publish
+            Effect: Allow
+            Resource: !Ref ConfigTopic
+            Principal:
+              Service:
+                - config.amazonaws.com
 
   ConfigRecorderRole:
     Type: AWS::IAM::Role
@@ -141,4 +161,4 @@ Resources:
           - FrequencyMap
           - !Ref Frequency
       S3BucketName: !Ref BucketName
-      SnsTopicARN: !Ref TopicArn
+      SnsTopicARN: !Ref ConfigTopic
