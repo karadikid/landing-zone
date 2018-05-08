@@ -21,14 +21,17 @@
     },
     "NonProd": {
         "email":       "ckamps.nonprod@outlook.com",
+        "attach_ou":   "FormalHostingOU",
         "enable":      false
     },
     "PreProd": {
         "email":       "ckamps.preprod@outlook.com",
+        "attach_ou":   "FormalHostingOU",
         "enable":      false
     },
     "Prod": {
         "email":       "ckamps.prod@outlook.com",
+        "attach_ou":   "FormalHostingOU",
         "enable":      false
     }
 }

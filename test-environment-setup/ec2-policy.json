@@ -14,7 +14,8 @@
         {
             "Effect": "Allow",
             "Action": [
-                "ec2:DescribeInstances"
+                "ec2:DescribeInstances",
+                "ec2:DescribeVpcs"
             ],
             "Resource": "*"
         },

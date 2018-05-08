@@ -1,0 +1,1 @@
+* Automatically run cleanup when validation is valid

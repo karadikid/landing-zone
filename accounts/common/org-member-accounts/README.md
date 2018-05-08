@@ -13,6 +13,13 @@ CloudFormation template in the new account.
                                  [--ou_name OU_NAME] [--scp_name SCP_NAME]
                                  [--region REGION]
 
+## TO DO
+
+* Make `admin_username` and `admin_password` optional since they are only used when
+  `template_file` applies.
+* Make idempotent
+  * Ensure it can be used to apply ongoing changes.
+  
 ## Create Member Account
 
 If the account name already exists, the account will not be created.
