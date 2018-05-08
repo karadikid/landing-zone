@@ -17,6 +17,7 @@ __version__ = '0.1'
 __author__ = '@author@'
 __email__ = '@email@'
 
+
 def create_account(
         account_name,
         account_email,
@@ -31,50 +32,167 @@ def create_account(
     '''
 
     client = boto3.client('organizations')
+
+    # See if account exists
+    token = None
+    paginator = client.get_paginator('list_accounts')
+    page_iterator = paginator.paginate(
+        PaginationConfig={
+            'StartingToken': token
+        }
+    )
+   
+    account_id = None 
+    for page in page_iterator:
+        for account in page['Accounts']:
+            print(account['Name'])
+            if account['Name'] == account_name:
+                print("Account already exists: " + account_name + " " + account["Id"])
+                account_id = account["Id"]
+                break
     
-    try:
-        create_account_response = client.create_account(Email=account_email, AccountName=account_name,
-                                                        RoleName=account_role,
-                                                        IamUserAccessToBilling=access_to_billing)
-    except botocore.exceptions.ClientError as e:
-        print(e)
-        sys.exit(1)
-
-    time.sleep(10)
-
-    account_status = 'IN_PROGRESS'
-    while account_status == 'IN_PROGRESS':
-        create_account_status_response = client.describe_create_account_status(
-            CreateAccountRequestId=create_account_response.get('CreateAccountStatus').get('Id'))
-        print("Create account status "+str(create_account_status_response))
-        account_status = create_account_status_response.get('CreateAccountStatus').get('State')
-    if account_status == 'SUCCEEDED':
-        account_id = create_account_status_response.get('CreateAccountStatus').get('AccountId')
-    elif account_status == 'FAILED':
-        print("Account creation failed: " + create_account_status_response.get('CreateAccountStatus').get('FailureReason'))
-        sys.exit(1)
-    root_id = client.list_roots().get('Roots')[0].get('Id')
-
-    # Move account to the org
-    if organization_unit_id is not None:
+    if account_id is None:
         try:
-            describe_organization_response = client.describe_organizational_unit(
-                OrganizationalUnitId=organization_unit_id)
-            move_account_response = client.move_account(AccountId=account_id, SourceParentId=root_id,
-                                                        DestinationParentId=organization_unit_id)
-        except Exception as ex:
-            template = "An exception of type {0} occurred. Arguments:\n{1!r} "
-            message = template.format(type(ex).__name__, ex.args)
-            # create_organizational_unit(organization_unit_id)
-            print(message)
+            create_account_response = client.create_account(
+                Email=account_email,
+                AccountName=account_name,
+                RoleName=account_role,
+                IamUserAccessToBilling=access_to_billing)
+                
+        except botocore.exceptions.ClientError as e:
+            print(e)
+            sys.exit(1)
 
-    # Attach policy to account if exists
-    if scp is not None:
-        attach_policy_response = client.attach_policy(PolicyId=scp, TargetId=account_id)
-        print("Attach policy response "+str(attach_policy_response))
+        time.sleep(10)
+
+        account_status = 'IN_PROGRESS'
+        while account_status == 'IN_PROGRESS':
+            create_account_status_response = client.describe_create_account_status(
+                CreateAccountRequestId=create_account_response.get('CreateAccountStatus').get('Id'))
+            print("Create account status "+str(create_account_status_response))
+            account_status = create_account_status_response.get('CreateAccountStatus').get('State')
+        if account_status == 'SUCCEEDED':
+            account_id = create_account_status_response.get('CreateAccountStatus').get('AccountId')
+        elif account_status == 'FAILED':
+            print("Account creation failed: " + create_account_status_response.get('CreateAccountStatus').get('FailureReason'))
+            sys.exit(1)
+            
+    root_id = client.list_roots().get('Roots')[0].get('Id')
+        
+    parents = client.list_parents(
+        ChildId=account_id
+    )
+    parent_id = parents.get('Parents')[0].get('Id')
+
+    if ou_name is None:
+        # Ensure account is moved to Root if not already there
+        if root_id != parent_id:
+            move_account(account_id, parent_id, root_id, region)
+            
+    else:
+        # Move account to the specified OU
+        ou_id = get_ou_id(ou_name, region)
+       
+        if ou_id != parent_id: 
+            move_account(account_id, parent_id, ou_id, region)
+
+    if scp_name is not None:
+        attach_scp(account_id, scp_name, region) 
 
     return account_id
 
+
+def attach_scp(account_id, scp_name, region):
+
+    client = boto3.client('organizations', region_name=region)
+       
+    # Find SCP based on name
+    token = None
+    paginator = client.get_paginator('list_policies')
+    page_iterator = paginator.paginate(
+        Filter='SERVICE_CONTROL_POLICY',
+        PaginationConfig={
+            'StartingToken': token
+        }
+    )
+   
+    policy_id = None 
+    for page in page_iterator:
+        for policy in page['Policies']:
+            print(policy['Name'])
+            if policy['Name'] == scp_name:
+                print("Policy exists: " + scp_name + " " + policy["Id"])
+                policy_id = policy["Id"]
+                break
+    
+    try:        
+        client.attach_policy(PolicyId=policy_id, TargetId=account_id)
+
+    except botocore.exceptions.ClientError as e:
+        if e.response['Error']['Code'] == 'DuplicatePolicyAttachmentException':
+            print("SCP already attached: " + scp_name)
+        else:
+            print(e)
+            sys.exit(1)
+        
+
+def move_account(account_id, parent_id, destination_id, region):
+
+    client = boto3.client('organizations', region_name=region)
+       
+    try:
+        client.move_account(
+            AccountId=account_id,
+            SourceParentId=parent_id,
+            DestinationParentId=destination_id)
+               
+    except Exception as ex:
+        template = "An exception of type {0} occurred. Arguments:\n{1!r} "
+        message = template.format(type(ex).__name__, ex.args)
+        print(message)
+
+    return
+
+
+def get_ou_id(name, region):
+
+    client = boto3.client('organizations', region_name=region)
+   
+    try:
+        ou_data = get_root_ou(region) 
+        root_ou_id = ou_data["Id"]
+    
+        response = client.list_organizational_units_for_parent(ParentId=root_ou_id)
+        
+    except botocore.exceptions.ClientError as e:
+        print(e)
+        sys.exit(1)    
+    
+    ous = response.get('OrganizationalUnits')
+    
+    for x in ous:
+        if x['Name'] == name:
+            ou_id = x['Id']
+    
+    if not ou_id:
+       raise ValueError('Cannot find OU name: ', name)
+    
+    return ou_id
+
+
+def get_root_ou(region):
+
+    client = boto3.client('organizations', region_name=region)
+   
+    try:
+        ou_data = client.list_roots()['Roots'][0]
+        
+    except botocore.exceptions.ClientError as e:
+        print(e)
+        sys.exit(1)    
+    
+    return ou_data
+    
 
 def assume_role(account_id, account_role):
 
@@ -106,6 +224,7 @@ def assume_role(account_id, account_role):
     # credentials that can be used to make subsequent API calls
     return assumedRoleObject['Credentials']
 
+
 def get_template(template_file):
 
     '''
@@ -117,6 +236,7 @@ def get_template(template_file):
     cf_template = f.read()
     
     return cf_template
+
 
 def deploy_resources(
     credentials,
@@ -147,11 +267,11 @@ def deploy_resources(
                 TemplateBody=template,
                 Parameters=[
                     {
-                        'ParameterKey' : 'pAdminUsername',
+                        'ParameterKey' : 'pAdminUserName',
                         'ParameterValue' : admin_username
                     },
                     {
-                        'ParameterKey' : 'AdminPassword',
+                        'ParameterKey' : 'pAdminUserPassword',
                         'ParameterValue' : admin_password
                     }
                 ],
@@ -202,6 +322,7 @@ def deploy_resources(
     
     return stack
 
+
 def main(arguments):
 
     parser = argparse.ArgumentParser(
@@ -212,21 +333,21 @@ def main(arguments):
     parser.add_argument('--account_email', required=True)
     parser.add_argument('--account_role',
                         default='OrganizationAccountAccessRole')
-    parser.add_argument('--template_file',
-                        default='baseline.yml')
-    parser.add_argument('--stack_name',
+    parser.add_argument('--template_file')
+    parser.add_argument('--stack_name', 
                         default='Baseline')
-    parser.add_argument('--region',
-                        default='us-east-1')
     parser.add_argument('--admin_username', required=True)
     parser.add_argument('--admin_password', required=True)
     parser.add_argument('--ou_name')
     parser.add_argument('--scp_name')
+    parser.add_argument('--region',
+                        default='us-east-1')
     args = parser.parse_args(arguments)
 
     access_to_billing = "DENY"
 
     print("Creating new account: " + args.account_name + " (" + args.account_email + ")")
+    #account_id = create_account(
     account_id = create_account(
         args.account_name,
         args.account_email,
@@ -235,22 +356,23 @@ def main(arguments):
         args.scp_name,
         access_to_billing,
         args.region)
-    print("Created acount: " + account_id)
   
-    credentials = assume_role(account_id, args.account_role)
-    
-    print("Deploying resources from " + args.template_file + " as " + args.stack_name + " in " + args.stack_region)
-    template = get_template(args.template_file)
-    stack = deploy_resources(
-        credentials,
-        template,
-        args.stack_name,
-        args.stack_region,
-        args.admin_username,
-        args.admin_password)
-    print(stack)
-    print("Resources deployed for account " + account_id + " (" + args.account_email + ")")
+   
+    if args.template_file is not None: 
+        credentials = assume_role(account_id, args.account_role)
+        
+        print("Deploying resources from " + args.template_file + " as " + args.stack_name + " in " + args.region)
+        
+        template = get_template(args.template_file)
+        stack = deploy_resources(
+            credentials,
+            template,
+            args.stack_name,
+            args.region,
+            args.admin_username,
+            args.admin_password)
+        print(stack)
+        print("Resources deployed for account " + account_id + " (" + args.account_email + ")")
 
 if __name__ == '__main__':
     sys.exit(main(sys.argv[1:]))
-

@@ -48,11 +48,16 @@
                 "organizations:CreatePolicy",
                 "organizations:CreateAccount",
                 "organizations:CreateOrganizationalUnit",
+                "organizations:DescribeCreateAccountStatus",
                 "organizations:DescribeOrganization",
+                "organizations:DescribeOrganizationalUnit",
                 "organizations:EnablePolicyType",
+                "organizations:ListAccounts",
                 "organizations:ListOrganizationalUnitsForParent",
+                "organizations:ListParents",
                 "organizations:ListPolicies",
-                "organizations:ListRoots"
+                "organizations:ListRoots",
+                "organizations:MoveAccount"
             ],
             "Resource": "*"
         },

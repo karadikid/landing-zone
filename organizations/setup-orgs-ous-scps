@@ -20,6 +20,7 @@ __version__ = '0.1'
 __author__ = '@author@'
 __email__ = '@email@'
 
+
 def attach_scp_to_ou(scp_id, ou_name, region):
 
     '''
@@ -51,14 +52,14 @@ def attach_scp_to_ou(scp_id, ou_name, region):
             
     return
 
+
 def create_ou(name, region):
 
     '''
         Create Organizational Unit - OU
     '''
 
-    ou_data = get_root_ou(region) 
-    root_ou_id = ou_data["Id"]
+    root_ou_id = get_root_ou_id(region) 
 
     client = boto3.client('organizations', region_name=region)
       
@@ -79,6 +80,7 @@ def create_ou(name, region):
     ou_id = response.get('OrganizationalUnit').get('Id')
     
     return ou_id  
+
 
 def create_service_control_policy(
         name,
@@ -119,6 +121,7 @@ def create_service_control_policy(
     
     return policy_id
 
+
 def enable_root_ou_policy_type(region):
 
     '''
@@ -142,14 +145,13 @@ def enable_root_ou_policy_type(region):
         
     return
 
-def get_ou(name, region):
+
+def get_ou_id(name, region):
 
     client = boto3.client('organizations', region_name=region)
    
     try:
-        ou_data = get_root_ou(region) 
-        root_ou_id = ou_data["Id"]
-    
+        root_ou_id = get_root_ou_id(region) 
         response = client.list_organizational_units_for_parent(ParentId=root_ou_id)
         
     except botocore.exceptions.ClientError as e:
@@ -166,8 +168,9 @@ def get_ou(name, region):
        raise ValueError('Cannot find OU name: ', name)
     
     return ou_id
+ 
     
-def get_root_ou(region):
+def get_root_ou_id(region):
 
     client = boto3.client('organizations', region_name=region)
    
@@ -178,7 +181,8 @@ def get_root_ou(region):
         print(e)
         sys.exit(1)    
     
-    return ou_data
+    return ou_data["Id"]
+    
     
 def main(arguments):
 
