@@ -1,0 +1,37 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Create a VPC Flow Logs feeding into S3 logging bucket in the logging account.
+
+Parameters:
+  BucketName:
+    Type: String
+    Description: Bucket name
+  VPCFlowLogLogGroupName:
+    Type: String
+    Description: "Name of the Log Group for the VPC Flow Logs" 
+    Default: "vpcflowlogs"
+  VPCFlowLogLogGroupRetentionDays:
+    Type: String
+    Description: "Days the VPC Flow Logs should be retained within CloudWatch Logs"
+    Default: 30
+  DeliverLogsPermissionArn:
+    Type: String
+    Description: "ARN of the Service role that permits Amazon EC2 to publish flow logs to CloudWatch Logs"
+  VPCId:
+    Type: String
+    Description: "VPCId of the VPC to enable FlowLogs on"
+
+Resources:
+  LogGroup:
+    Type: "AWS::Logs::LogGroup"
+    Properties: 
+      LogGroupName: !Ref VPCFlowLogLogGroupName
+      RetentionInDays: !Ref VPCFlowLogLogGroupRetentionDays
+
+  VpcFlowLogs:
+    Type: "AWS::EC2::FlowLog"
+    Properties:
+      DeliverLogsPermissionArn: !Ref DeliverLogsPermissionArn
+      LogGroupName : !Ref VPCFlowLogLogGroupName
+      ResourceId : !Ref VPCId
+      ResourceType : "VPC"
+      TrafficType : "ALL"
