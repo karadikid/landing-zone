@@ -1,3 +1,0 @@
-# Create and Manage AWS Master Account
-
-...
