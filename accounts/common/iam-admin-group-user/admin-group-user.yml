@@ -2,6 +2,16 @@ AWSTemplateFormatVersion: '2010-09-09'
 
 Description: Create administrative IAM group and user
 
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterLabels:
+      pAdminGroupName:
+        default: Admin Group Name
+      pAdminUserName:
+        default: Admin User Name
+      pAdminUserPassword:
+        default: Admin User Password
+        
 Parameters:
 
   pAdminGroupName:

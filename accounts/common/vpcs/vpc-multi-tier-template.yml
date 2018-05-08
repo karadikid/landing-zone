@@ -3,9 +3,8 @@ AWSTemplateFormatVersion: '2010-09-09'
 Description: This is the CloudFormation script for a 2 or 3 tier Dev, Test, UAT, Prod (blue/green) VPC with 2,3,4 Public Subnets, 2,3,4,6,8 Private Subnets
   with a NatGateway.
 
-Metadata: # Metadata Section
+Metadata:
   AWS::CloudFormation::Interface:
-
     ParameterGroups:
     - Label:
         default: Environment Configuration
@@ -16,20 +15,31 @@ Metadata: # Metadata Section
         default: VPC Configuration
       Parameters:
       - pVpcCidr
-      - pNumTiers
       - pNumAzs
+    - Label:
+        default: VPC Tier 1
+      Parameters:
+      - pTier1Create
+      - pTier1Name
+      - pTier1Subnet1Cidr
+      - pTier1Subnet2Cidr
+      - pTier1Subnet3Cidr
     - Label:
         default: VPC Tier 2 - Private Subnets
       Parameters:
-      - pTier2PrivateSubnet1Cidr
-      - pTier2PrivateSubnet2Cidr
-      - pTier2PrivateSubnet3Cidr
+      - pTier2Create
+      - pTier2Name
+      - pTier2Subnet1Cidr
+      - pTier2Subnet2Cidr
+      - pTier2Subnet3Cidr
     - Label:
         default: VPC Tier 3 - Private Subnets - Optional with 2 Tier
       Parameters:
-      - pTier3PrivateSubnet1Cidr
-      - pTier3PrivateSubnet2Cidr
-      - pTier3PrivateSubnet3Cidr
+      - pTier3Create
+      - pTier3Name
+      - pTier3Subnet1Cidr
+      - pTier3Subnet2Cidr
+      - pTier3Subnet3Cidr
 
     ParameterLabels:
       pHostingEnvironmentName:
@@ -39,23 +49,40 @@ Metadata: # Metadata Section
 
       pVpcCidr:
         default: Amazon VPC CIDR IP Range
-      pNumTiers:
-        default: Number of Tiers used in the VPC.
       pNumAzs:
         default: Number of Availability Zones used in the VPC.
 
-      pTier2PrivateSubnet1Cidr:
+      pTier1Create:
+        default: Tier 1 Create?
+      pTier1Name:
+        default: Tier 1 Name
+      pTier1Subnet1Cidr:
+        default: Tier 1 AZ 1 - IP Address with CIDR
+      pTier1Subnet2Cidr:
+        default: Tier 1 AZ 2 - IP Address with CIDR
+      pTier1Subnet3Cidr:
+        default: Tier 1 AZ 3 - IP Address with CIDR or leave Blank
+
+      pTier2Create:
+        default: Tier 2 Create?
+      pTier2Name:
+        default: Tier 2 Name
+      pTier2Subnet1Cidr:
         default: Tier 2 AZ 1 - IP Address with CIDR
-      pTier2PrivateSubnet2Cidr:
+      pTier2Subnet2Cidr:
         default: Tier 2 AZ 2 - IP Address with CIDR
-      pTier2PrivateSubnet3Cidr:
+      pTier2Subnet3Cidr:
         default: Tier 2 AZ 3 - IP Address with CIDR or leave Blank
 
-      pTier3PrivateSubnet1Cidr:
+      pTier3Create:
+        default: Tier 3 Create?
+      pTier3Name:
+        default: Tier 3 Name
+      pTier3Subnet1Cidr:
         default: Tier 3 AZ 1 - IP Address with CIDR or leave Blank
-      pTier3PrivateSubnet2Cidr:
+      pTier3Subnet2Cidr:
         default: Tier 3 AZ 2 - IP Address with CIDR or leave Blank
-      pTier3PrivateSubnet3Cidr: 
+      pTier3Subnet3Cidr: 
         default: Tier 3 AZ 3 - IP Address with CIDR or leave Blank
 
 Parameters:
@@ -88,12 +115,23 @@ Parameters:
     MaxLength: 18
     ConstraintDescription: Must be a valid IP CIDR range of the form x.x.x.x/x
   
-  pNumTiers: 
+  pTier1Create:
     Type: String
-    Description: Choose 1 or 2
-    AllowedValues:
-    - 1
-    - 2
+    Description: Whether Tier 1 should be created
+    Default: false
+    AllowedValues: [true, false]
+
+  pTier2Create:
+    Type: String
+    Description: Whether Tier 2 should be created
+    Default: true
+    AllowedValues: [true, false]
+
+  pTier3Create:
+    Type: String
+    Description: Whether Tier 3 should be created
+    Default: true
+    AllowedValues: [true, false]
     
   pNumAzs:
     Type: String
