@@ -17,6 +17,9 @@ Parameters:
   SecurityAccountId:
     Description: Security Account ID
     Type: String
+  KmsKeyId:
+    Description: KeyId of KMS Key to use for default BucketEncryption
+    Type: String
 
 Resources:
 
@@ -25,6 +28,17 @@ Resources:
     Type: AWS::S3::Bucket
     Properties:
       BucketName: !Ref BucketName
+      AccessControl: "LogDeliveryWrite"
+      LoggingConfiguration: 
+        DestinationBucketName: !Ref BucketName
+        LogFilePrefix: "S3AccessLogs"
+        BucketEncryption:
+          ServerSideEncryptionConfiguration:
+            ServerSideEncryptionByDefault: 
+              KMSMasterKeyID: !Ref KmsKeyId
+              SSEAlgorithm: "aws:kms"
+        VersioningConfiguration:
+          Status: "Enabled"
 
   S3BucketPolicy:
     Type: AWS::S3::BucketPolicy
@@ -82,3 +96,7 @@ Resources:
                           - "/AWSLogs/"
                           - !Ref SecurityAccountId
                           - "/*"
+            Condition:
+              "StringEquals":
+                "s3:x-amz-acl": "bucket-owner-full-control"
+                
