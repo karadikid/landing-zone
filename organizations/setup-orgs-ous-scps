@@ -28,10 +28,10 @@ def attach_scp_to_ou(scp_id, ou_name, region):
     '''
     
     if ou_name.lower() == "root":
-        ou_data = get_root_ou(region) 
+        ou_data = get_root_ou_id(region) 
         ou_id = ou_data["Id"]
     else:
-        ou_id = get_ou(ou_name, region) 
+        ou_id = get_ou_id(ou_name, region) 
     
 
     client = boto3.client('organizations', region_name=region)
@@ -128,7 +128,7 @@ def enable_root_ou_policy_type(region):
         Enable SERVICE_CONTROL_POLICY type on root OU
     '''
 
-    ou_data = get_root_ou(region) 
+    ou_data = get_root_ou_id(region) 
     root_ou_id = ou_data["Id"]
    
     if not ou_data["PolicyTypes"]: 
