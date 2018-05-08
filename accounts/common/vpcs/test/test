@@ -1,15 +1,16 @@
 #!/usr/bin/env bash
 
 AWS_REGION=us-east-1
-STACK_NAME=TestAdminGroupUser
+STACK_NAME=TestVpc
 
 aws cloudformation create-stack \
                      --stack-name ${STACK_NAME} \
-                     --template-body file:///$PWD/../admin-group-user.yml \
+                     --template-body file:///$PWD/../vpc-multi-tier-template.yml \
                      --parameters file:///$PWD/parameters.json \
                      --capabilities CAPABILITY_NAMED_IAM \
                      --region ${AWS_REGION}
 
 aws cloudformation wait stack-create-complete --stack-name ${STACK_NAME} --region ${AWS_REGION}
 
-inspec exec validate.rb  -t aws://${AWS_REGION}
+inspec exec validate.rb
+#inspec exec validate.rb  -t aws://${AWS_REGION}

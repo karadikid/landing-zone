@@ -1,17 +1,16 @@
 AWSTemplateFormatVersion: '2010-09-09'
 
-Description: This is the CloudFormation script for a 2 or 3 tier Dev, Test, UAT, Prod (blue/green) VPC with 2,3,4 Public Subnets, 2,3,4,6,8 Private Subnets
-  with a NatGateway.
+Description: Creates 1-, 2- or 3-tier hosting environment with 2 or 3 Availability Zones (AZs)
 
 Metadata:
 
   AWS::CloudFormation::Interface:
     ParameterGroups:
     - Label:
-        default: Environment Configuration
+        default: Hosting Environment Configuration
       Parameters:
-      - pHostingEnvironmentName
-      - pHostingEnvironmentVersion
+      - pHostingEnvironmentAccount
+      - pHostingEnvironmentInstance
     - Label:
         default: VPC Configuration
       Parameters:
@@ -44,15 +43,15 @@ Metadata:
       - pTier3Subnet3Cidr
 
     ParameterLabels:
-      pHostingEnvironmentName:
-        default: Hosting Environment Name to associate with the VPC
-      pHostingEnvironmentVersion:
-        default: 'This allows for updates, think (Blue/Green)'
+      pHostingEnvironmentAccount:
+        default: Hosting Environment Name
+      pHostingEnvironmentInstance:
+        default: Hosting Environment Role
 
       pVpcCidr:
-        default: Amazon VPC CIDR IP Range
+        default: VPC CIDR Block
       pNumAzs:
-        default: Number of Availability Zones used in the VPC.
+        default: Number of AZs
 
       pTier1Create:
         default: Tier 1 Create?
@@ -61,39 +60,40 @@ Metadata:
       pTier1CreateInternetGateway:
         default: Tier 1 Create Internet Gateway?
       pTier1Subnet1Cidr:
-        default: Tier 1 AZ 1 - IP Address with CIDR
+        default: Tier 1 AZ 1 - CIDR
       pTier1Subnet2Cidr:
-        default: Tier 1 AZ 2 - IP Address with CIDR
+        default: Tier 1 AZ 2 - CIDR
       pTier1Subnet3Cidr:
-        default: Tier 1 AZ 3 - IP Address with CIDR or leave Blank
+        default: Tier 1 AZ 3 - CIDR
 
       pTier2Create:
         default: Tier 2 Create?
       pTier2Name:
         default: Tier 2 Name
       pTier2Subnet1Cidr:
-        default: Tier 2 AZ 1 - IP Address with CIDR
+        default: Tier 2 AZ 1 - CIDR
       pTier2Subnet2Cidr:
-        default: Tier 2 AZ 2 - IP Address with CIDR
+        default: Tier 2 AZ 2 - CIDR
       pTier2Subnet3Cidr:
-        default: Tier 2 AZ 3 - IP Address with CIDR or leave Blank
+        default: Tier 2 AZ 3 - CIDR
 
       pTier3Create:
         default: Tier 3 Create?
       pTier3Name:
         default: Tier 3 Name
       pTier3Subnet1Cidr:
-        default: Tier 3 AZ 1 - IP Address with CIDR or leave Blank
+        default: Tier 3 AZ 1 - CIDR
       pTier3Subnet2Cidr:
-        default: Tier 3 AZ 2 - IP Address with CIDR or leave Blank
+        default: Tier 3 AZ 2 - CIDR
       pTier3Subnet3Cidr: 
-        default: Tier 3 AZ 3 - IP Address with CIDR or leave Blank
+        default: Tier 3 AZ 3 - CIDR
 
 Parameters:
 
-  pHostingEnvironmentName:
+  pHostingEnvironmentAccount:
     Type: String
-    Description: Choose "Audit, Security, Platform, Sandbox, Non-Prod, Pre-Prod, Prod"
+    Description: Role of the AWS account
+    Default: Sandbox
     AllowedValues:
     - Audit
     - Security
@@ -103,26 +103,35 @@ Parameters:
     - Pre-Prod
     - Prod 
     
-  pHostingEnvironmentVersion:
+  pHostingEnvironmentInstance:
     Type: String
-    Description: Choose "Blue, Green"
+    Description: Role of this instance of the hosting environment
+    Default: Primary
     AllowedValues:
-    - Blue
-    - Green
+    - Primary
+    - Secondary
    
   pVpcCidr:
     Type: String
-    Description: Network CIDR Format x.x.x.x/x
+    Description: CIDR Format x.x.x.x/x
     Default: 10.1.0.0/16
     AllowedPattern: (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})
     MinLength: 9
     MaxLength: 18
     ConstraintDescription: Must be a valid IP CIDR range of the form x.x.x.x/x
+    
+  pNumAzs:
+    Type: String
+    Default: 2
+    Description: Number of subnets for each tier
+    AllowedValues:
+    - 2
+    - 3
   
   pTier1Create:
     Type: String
     Description: Whether Tier 1 should be created
-    Default: false
+    Default: true
     AllowedValues: [true, false]
   
   pTier1Name:
@@ -133,7 +142,7 @@ Parameters:
   pTier1CreateInternetGateway:
     Type: String
     Description: Whether Tier 1 Internet Gateway should be created
-    Default: false
+    Default: true
     AllowedValues: [true, false]
 
   pTier2Create:
@@ -157,17 +166,10 @@ Parameters:
     Type: String
     Description: Tier 3 Name
     Default: Tier3
-    
-  pNumAzs:
-    Type: String
-    Description: Choose 2, 3
-    AllowedValues:
-    - 2
-    - 3
 
   pTier1Subnet1Cidr:
     Type: String
-    Description: Tier 1 Subnet AZ1
+    Description: Tier 1 Subnet AZ 1
     Default: 10.1.1.0/24
     AllowedPattern: (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})
     MinLength: 9
@@ -176,7 +178,7 @@ Parameters:
 
   pTier1Subnet2Cidr:
     Type: String
-    Description: Tier 1 Subnet AZ2
+    Description: Tier 1 Subnet AZ 2
     Default: 10.1.2.0/24
     AllowedPattern: (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})
     MinLength: 9
@@ -185,14 +187,13 @@ Parameters:
 
   pTier1Subnet3Cidr:
     Type: String
-    Description: Tier 1 Subnet AZ3
-    Default: 10.1.3.0/24
+    Description: Tier 1 Subnet AZ 3
     AllowedPattern: (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})|^$
     ConstraintDescription: Must be a valid IP CIDR range of the form x.x.x.x/x
    
   pTier2Subnet1Cidr:
     Type: String
-    Description: Tier 2 Subnet AZ1
+    Description: Tier 2 Subnet AZ 1
     Default: 10.1.11.0/24
     AllowedPattern: (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})
     MinLength: 9
@@ -211,7 +212,6 @@ Parameters:
   pTier2Subnet3Cidr:
     Type: String
     Description: Tier 2 Subnet AZ 3
-    Default: 10.1.13.0/24
     AllowedPattern: (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})|^$
     ConstraintDescription: Must be a valid IP CIDR range of the form x.x.x.x/x
   
@@ -232,7 +232,6 @@ Parameters:
   pTier3Subnet3Cidr:
     Type: String
     Description: Tier 3 Subnet AZ 3
-    Default: 10.1.23.0/24
     AllowedPattern: (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})|^$
     ConstraintDescription: Must be a valid IP CIDR range of the form x.x.x.x/x
 
@@ -258,7 +257,7 @@ Resources:
       EnableDnsHostnames: 'true'
       Tags:
       - Key: Name
-        Value: !Sub '${pHostingEnvironmentName}-${pHostingEnvironmentVersion}-VPC'
+        Value: !Sub '${pHostingEnvironmentAccount}-${pHostingEnvironmentInstance}-VPC'
 
 #------------------------------------------------------------------------------
 # Tier 1
@@ -270,7 +269,7 @@ Resources:
     Properties:
       Tags:
       - Key: Name
-        Value: !Sub '${pHostingEnvironmentName}-${pHostingEnvironmentVersion}-IGW'
+        Value: !Sub '${pHostingEnvironmentAccount}-${pHostingEnvironmentInstance}-IGW'
 
   rTier1InternetGatewayAttachment:
     Type: AWS::EC2::VPCGatewayAttachment
@@ -290,7 +289,7 @@ Resources:
       VpcId: !Ref 'rVpc'
       Tags:
       - Key: Name
-        Value: !Sub '${pHostingEnvironmentName}-${pHostingEnvironmentVersion}-${pTier1Name}-Subnet-1'
+        Value: !Sub '${pHostingEnvironmentAccount}-${pHostingEnvironmentInstance}-${pTier1Name}-Subnet-1'
   
   rTier1Subnet2:
     Type: AWS::EC2::Subnet
@@ -303,7 +302,7 @@ Resources:
       VpcId: !Ref 'rVpc'
       Tags:
       - Key: Name
-        Value: !Sub '${pHostingEnvironmentName}-${pHostingEnvironmentVersion}-${pTier1Name}-Subnet-2'
+        Value: !Sub '${pHostingEnvironmentAccount}-${pHostingEnvironmentInstance}-${pTier1Name}-Subnet-2'
  
   rTier1Subnet3:
     Type: AWS::EC2::Subnet
@@ -316,7 +315,7 @@ Resources:
       VpcId: !Ref 'rVpc'
       Tags:
       - Key: Name
-        Value: !Sub '${pHostingEnvironmentName}-${pHostingEnvironmentVersion}-${pTier1Name}-Subnet-3'
+        Value: !Sub '${pHostingEnvironmentAccount}-${pHostingEnvironmentInstance}-${pTier1Name}-Subnet-3'
 
   rTier1RouteTable1:
     Type: AWS::EC2::RouteTable
@@ -325,7 +324,7 @@ Resources:
       VpcId: !Ref 'rVpc'
       Tags:
       - Key: Name
-        Value: !Sub '${pHostingEnvironmentName}-${pHostingEnvironmentVersion}-${pTier1Name}-Route-Table-1'
+        Value: !Sub '${pHostingEnvironmentAccount}-${pHostingEnvironmentInstance}-${pTier1Name}-Route-Table-1'
 
   rTier1RouteTable2:
     Type: AWS::EC2::RouteTable
@@ -334,7 +333,7 @@ Resources:
       VpcId: !Ref 'rVpc'
       Tags:
       - Key: Name
-        Value: !Sub '${pHostingEnvironmentName}-${pHostingEnvironmentVersion}-${pTier1Name}-Route-Table-2'
+        Value: !Sub '${pHostingEnvironmentAccount}-${pHostingEnvironmentInstance}-${pTier1Name}-Route-Table-2'
 
   rTier1RouteTable3:
     Type: AWS::EC2::RouteTable
@@ -344,7 +343,7 @@ Resources:
       VpcId: !Ref 'rVpc'
       Tags:
       - Key: Name
-        Value: !Sub '${pHostingEnvironmentName}-${pHostingEnvironmentVersion}-${pTier1Name}-Route-Table-3'
+        Value: !Sub '${pHostingEnvironmentAccount}-${pHostingEnvironmentInstance}-${pTier1Name}-Route-Table-3'
 
   rTier1IgwRoute1:
     Type: AWS::EC2::Route
@@ -387,31 +386,40 @@ Resources:
       RouteTableId: !Ref 'rTier1RouteTable3'
       SubnetId: !Ref 'rTier1Subnet3'
 
+#------------------------------------------------------------------------------
+# Tier 2
+#------------------------------------------------------------------------------
+
+
+#------------------------------------------------------------------------------
+# Tier 3
+#------------------------------------------------------------------------------
+
 Outputs:
 
   oVpcId:
     Description: VpcId
     Value: !Ref 'rVpc'
     Export:
-      Name: !Sub '${pHostingEnvironmentName}-${pHostingEnvironmentVersion}-oVpcId'
+      Name: !Sub '${pHostingEnvironmentAccount}-${pHostingEnvironmentInstance}-oVpcId'
 
   oTier1Subnet1:
     Description: Tier 1 Subnet 1
     Value: !Ref 'rTier1Subnet1'
     Condition: cCreateTier1
     Export:
-      Name: !Sub '${pHostingEnvironmentName}-${pHostingEnvironmentVersion}-${pTier1Name}-oTier1Subnet1'
+      Name: !Sub '${pHostingEnvironmentAccount}-${pHostingEnvironmentInstance}-${pTier1Name}-oTier1Subnet1'
 
   oTier1Subnet2:
     Description: Tier 1 Subnet 2
     Value: !Ref 'rTier1Subnet2'
     Condition: cCreateTier1
     Export:
-      Name: !Sub '${pHostingEnvironmentName}-${pHostingEnvironmentVersion}-${pTier1Name}-oTier1Subnet2'
+      Name: !Sub '${pHostingEnvironmentAccount}-${pHostingEnvironmentInstance}-${pTier1Name}-oTier1Subnet2'
 
   oTier1Subnet3:
     Description: Tier 1 Subnet 3
     Value: !Ref 'rTier1Subnet3'
-    Condition: cCreateTier1
+    Condition: cCreateTier1With3Azs
     Export:
-      Name: !Sub '${pHostingEnvironmentName}-${pHostingEnvironmentVersion}-${pTier1Name}-oTier1Subnet3'
+      Name: !Sub '${pHostingEnvironmentAccount}-${pHostingEnvironmentInstance}-${pTier1Name}-oTier1Subnet3'
