@@ -12,7 +12,7 @@ Parameters:
   VPCFlowLogLogGroupRetentionDays:
     Type: String
     Description: "Days the VPC Flow Logs should be retained within CloudWatch Logs"
-    Default: 30
+    Default: 90
   DeliverLogsPermissionArn:
     Type: String
     Description: "ARN of the Service role that permits Amazon EC2 to publish flow logs to CloudWatch Logs"
