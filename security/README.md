@@ -12,6 +12,7 @@ https://{redacted}.amazon.com/packages/Landing-zone/logs/heads/feature/default_n
          2. create Cloudtrails
          3. run Cloudformation
          4. config:*
+         5. sns:*
       1. Service role that permits Amazon EC2 to publish flow logs to a CloudWatch Logs log group in the each account 
    2. MFA delete policy on S3 Buckets in Logging/Auditing account     
 
