@@ -27,7 +27,7 @@ If your account doesn't already have a suitable administrator IAM user, add an I
 
 Use CloudFormation from within the root account to execute the following template:
 
-    ../admin-group-user/admin-group-user.yml
+    ../../accounts/common/iam-admin-group-user/admin-group-user/admin-group-user.yml
     
 Log in as the new Administrator IAM user.
 
