@@ -408,18 +408,18 @@ Outputs:
     Value: !Ref 'rTier1Subnet1'
     Condition: cCreateTier1
     Export:
-      Name: !Sub '${pHostingEnvironmentAccount}-${pHostingEnvironmentInstance}-${pTier1Name}-Tier1Subnet1'
+      Name: !Sub '${pHostingEnvironmentAccount}-${pHostingEnvironmentInstance}-Tier1Subnet1'
 
   oTier1Subnet2:
     Description: Tier 1 Subnet 2
     Value: !Ref 'rTier1Subnet2'
     Condition: cCreateTier1
     Export:
-      Name: !Sub '${pHostingEnvironmentAccount}-${pHostingEnvironmentInstance}-${pTier1Name}-Tier1Subnet2'
+      Name: !Sub '${pHostingEnvironmentAccount}-${pHostingEnvironmentInstance}-Tier1Subnet2'
 
   oTier1Subnet3:
     Description: Tier 1 Subnet 3
     Value: !Ref 'rTier1Subnet3'
     Condition: cCreateTier1With3Azs
     Export:
-      Name: !Sub '${pHostingEnvironmentAccount}-${pHostingEnvironmentInstance}-${pTier1Name}-Tier1Subnet3'
+      Name: !Sub '${pHostingEnvironmentAccount}-${pHostingEnvironmentInstance}-Tier1Subnet3'

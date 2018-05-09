@@ -127,7 +127,7 @@ Resources:
     Type: 'AWS::ElasticLoadBalancingV2::LoadBalancer'
     Properties:
       SecurityGroups:
-        - !Ref AlbSecurityGroup
+        - !Ref rAlbSecurityGroup
       Subnets:
         - Fn::ImportValue: !Sub "${pNetworkStack}-Tier1Subnet1"
         - Fn::ImportValue: !Sub "${pNetworkStack}-Tier1Subnet2"
@@ -146,7 +146,8 @@ Resources:
           FromPort: '80'
           ToPort: '80'
           CidrIp: 0.0.0.0/0
-      VpcId: Fn::ImportValue: !Sub "${pNetworkStack}-VpcId"
+      VpcId:
+          Fn::ImportValue: !Sub "${pNetworkStack}-VpcId"
 
   rHttpListener:
     Type: 'AWS::ElasticLoadBalancingV2::Listener'
@@ -161,7 +162,8 @@ Resources:
   rTargetGroup:
     Type: 'AWS::ElasticLoadBalancingV2::TargetGroup'
     Properties:
-      VpcId: Fn::ImportValue: !Sub "${pNetworkStack}-VpcId"
+      VpcId:
+          Fn::ImportValue: !Sub "${pNetworkStack}-VpcId"
       HealthCheckIntervalSeconds: 15
       HealthCheckTimeoutSeconds: 10
       HealthCheckPath: /
@@ -187,13 +189,12 @@ Resources:
         - Key: Name
           Value: Sample Workload
           PropagateAtLaunch: true
-    DependsOn:
-      - rPubRoute
 
   rSecurityGroup:
     Type: 'AWS::EC2::SecurityGroup'
     Properties:
-      VpcId: Fn::ImportValue: !Sub "${pNetworkStack}-VpcId"
+      VpcId:
+          Fn::ImportValue: !Sub "${pNetworkStack}-VpcId"
       GroupDescription: Allow access from HTTP and SSH traffic
       SecurityGroupIngress:
         - IpProtocol: tcp
@@ -243,14 +244,9 @@ Resources:
       'AWS::CloudFormation::Init':
         configSets:
           All:
-            - InstallAnsible
             - ConfigureCloudWatchMetrics
             - ConfigureCloudWatchLogsAgent
             - ConfigureSampleWorkload
-        InstallAnsible:
-          commands:
-            01_InstallAnsible:
-              command: sudo pip install ansible
         ConfigureCloudWatchMetrics:
           packages:
             yum:
