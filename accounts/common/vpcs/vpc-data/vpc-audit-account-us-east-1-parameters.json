@@ -1,0 +1,38 @@
+[
+  {
+    "ParameterKey": "pHostingEnvironmentAccount",
+    "ParameterValue": "Audit"
+  }, 
+  {
+    "ParameterKey": "pVpcCidr",
+    "ParameterValue": "10.137.80.0/23"
+  }, 
+  {
+    "ParameterKey": "pNumAzs",
+    "ParameterValue": "2"
+  }, 
+  {
+    "ParameterKey": "pTier1Create",
+    "ParameterValue": "false"
+  }, 
+  {
+    "ParameterKey": "pTier2Create",
+    "ParameterValue": "false"
+  }, 
+  {
+    "ParameterKey": "pTier3Create",
+    "ParameterValue": "true"
+  }, 
+  {
+    "ParameterKey": "pTier3Name",
+    "ParameterValue": "DataSubnet"
+  }, 
+  {
+    "ParameterKey": "pTier3Subnet1Cidr",
+    "ParameterValue": "10.137.80.0/24"
+  }, 
+  {
+    "ParameterKey": "pTier3Subnet2Cidr",
+    "ParameterValue": "10.137.81.0/24"
+  } 
+]

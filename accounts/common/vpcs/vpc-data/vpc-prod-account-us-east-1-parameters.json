@@ -1,0 +1,50 @@
+[
+  {
+    "ParameterKey": "pHostingEnvironmentAccount",
+    "ParameterValue": "Prod"
+  }, 
+  {
+    "ParameterKey": "pVpcCidr",
+    "ParameterValue": "10.136.0.0/18"
+  }, 
+  {
+    "ParameterKey": "pNumAzs",
+    "ParameterValue": "2"
+  }, 
+  {
+    "ParameterKey": "pTier1Create",
+    "ParameterValue": "false"
+  }, 
+  {
+    "ParameterKey": "pTier2Create",
+    "ParameterValue": "true"
+  }, 
+  {
+    "ParameterKey": "pTier2Name",
+    "ParameterValue": "PrivateSubnet"
+  }, 
+  {
+    "ParameterKey": "pTier3Create",
+    "ParameterValue": "true"
+  }, 
+  {
+    "ParameterKey": "pTier3Name",
+    "ParameterValue": "DataSubnet"
+  }, 
+  {
+    "ParameterKey": "pTier2Subnet1Cidr",
+    "ParameterValue": "10.136.24.0/21"
+  }, 
+  {
+    "ParameterKey": "pTier2Subnet2Cidr",
+    "ParameterValue": "10.136.32.0/21"
+  }, 
+  {
+    "ParameterKey": "pTier3Subnet1Cidr",
+    "ParameterValue": "10.136.48.0/22"
+  }, 
+  {
+    "ParameterKey": "pTier3Subnet2Cidr",
+    "ParameterValue": "10.136.52.0/22"
+  } 
+]

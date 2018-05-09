@@ -96,8 +96,8 @@ Parameters:
     - Security
     - Platform
     - Sandbox
-    - Non-Prod
-    - Pre-Prod
+    - NonProd
+    - PreProd
     - Prod 
     
   pVpcCidr:
@@ -343,6 +343,7 @@ Resources:
 
   rTier1IgwRoute1:
     Type: AWS::EC2::Route
+    Condition: cCreateTier1
     Properties:
       DestinationCidrBlock: 0.0.0.0/0
       GatewayId: !Ref 'rTier1InternetGateway'
@@ -350,6 +351,7 @@ Resources:
 
   rTier1IgwRoute2:
     Type: AWS::EC2::Route
+    Condition: cCreateTier1
     Properties:
       DestinationCidrBlock: 0.0.0.0/0
       GatewayId: !Ref 'rTier1InternetGateway'
@@ -365,12 +367,14 @@ Resources:
 
   rTier1Subnet1RouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
+    Condition: cCreateTier1
     Properties:
       RouteTableId: !Ref 'rTier1RouteTable1'
       SubnetId: !Ref 'rTier1Subnet1'
 
   rTier1Subnet2RouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
+    Condition: cCreateTier1
     Properties:
       RouteTableId: !Ref 'rTier1RouteTable2'
       SubnetId: !Ref 'rTier1Subnet2'

@@ -1,0 +1,50 @@
+[
+  {
+    "ParameterKey": "pHostingEnvironmentAccount",
+    "ParameterValue": "Sandbox"
+  }, 
+  {
+    "ParameterKey": "pVpcCidr",
+    "ParameterValue": "10.137.32.0/19"
+  }, 
+  {
+    "ParameterKey": "pNumAzs",
+    "ParameterValue": "2"
+  }, 
+  {
+    "ParameterKey": "pTier1Create",
+    "ParameterValue": "false"
+  }, 
+  {
+    "ParameterKey": "pTier2Create",
+    "ParameterValue": "true"
+  }, 
+  {
+    "ParameterKey": "pTier2Name",
+    "ParameterValue": "PrivateSubnet"
+  }, 
+  {
+    "ParameterKey": "pTier3Create",
+    "ParameterValue": "true"
+  }, 
+  {
+    "ParameterKey": "pTier3Name",
+    "ParameterValue": "DataSubnet"
+  }, 
+  {
+    "ParameterKey": "pTier2Subnet1Cidr",
+    "ParameterValue": "10.137.40.0/22"
+  }, 
+  {
+    "ParameterKey": "pTier2Subnet2Cidr",
+    "ParameterValue": "10.137.44.0/22"
+  }, 
+  {
+    "ParameterKey": "pTier3Subnet1Cidr",
+    "ParameterValue": "10.137.48.0/22"
+  }, 
+  {
+    "ParameterKey": "pTier3Subnet2Cidr",
+    "ParameterValue": "10.137.52.0/22"
+  } 
+]
