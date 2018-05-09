@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 AWS_REGION=us-east-1
-STACK_NAME=TestAdminGroupUser
+STACK_NAME=Test-VPC
 
 aws cloudformation delete-stack \
                      --stack-name ${STACK_NAME} \

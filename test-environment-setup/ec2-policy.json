@@ -4,6 +4,13 @@
         {
             "Effect": "Allow",
             "Action": [
+                "*"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
                 "cloudformation:CreateStack",
                 "cloudformation:DeleteStack",
                 "cloudformation:DescribeStacks",

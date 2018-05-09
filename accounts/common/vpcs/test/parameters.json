@@ -1,14 +1,6 @@
 [
   {
-    "ParameterKey": "pAdminGroupName",
-    "ParameterValue": "TestAdminGroup"
-  }, 
-  {
-    "ParameterKey": "pAdminUserName",
-    "ParameterValue": "TestAdminUser"
-  },
-  {
-    "ParameterKey": "pAdminUserPassword",
-    "ParameterValue": "adminpassworddd"
-  }
+    "ParameterKey": "pHostingEnvironmentAccount",
+    "ParameterValue": "Sandbox"
+  } 
 ]

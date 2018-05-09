@@ -10,7 +10,6 @@ Metadata:
         default: Hosting Environment Configuration
       Parameters:
       - pHostingEnvironmentAccount
-      - pHostingEnvironmentInstance
     - Label:
         default: VPC Configuration
       Parameters:
@@ -44,9 +43,7 @@ Metadata:
 
     ParameterLabels:
       pHostingEnvironmentAccount:
-        default: Hosting Environment Name
-      pHostingEnvironmentInstance:
-        default: Hosting Environment Role
+        default: Hosting Environment Account
 
       pVpcCidr:
         default: VPC CIDR Block
@@ -103,14 +100,6 @@ Parameters:
     - Pre-Prod
     - Prod 
     
-  pHostingEnvironmentInstance:
-    Type: String
-    Description: Role of this instance of the hosting environment
-    Default: Primary
-    AllowedValues:
-    - Primary
-    - Secondary
-   
   pVpcCidr:
     Type: String
     Description: CIDR Format x.x.x.x/x
@@ -188,6 +177,7 @@ Parameters:
   pTier1Subnet3Cidr:
     Type: String
     Description: Tier 1 Subnet AZ 3
+    Default: 10.1.3.0/24
     AllowedPattern: (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})|^$
     ConstraintDescription: Must be a valid IP CIDR range of the form x.x.x.x/x
    
@@ -212,6 +202,7 @@ Parameters:
   pTier2Subnet3Cidr:
     Type: String
     Description: Tier 2 Subnet AZ 3
+    Default: 10.1.13.0/24
     AllowedPattern: (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})|^$
     ConstraintDescription: Must be a valid IP CIDR range of the form x.x.x.x/x
   
@@ -232,6 +223,7 @@ Parameters:
   pTier3Subnet3Cidr:
     Type: String
     Description: Tier 3 Subnet AZ 3
+    Default: 10.1.23.0/24
     AllowedPattern: (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})|^$
     ConstraintDescription: Must be a valid IP CIDR range of the form x.x.x.x/x
 
@@ -246,6 +238,8 @@ Conditions:
   cCreate3AZs: !Equals [ !Ref 'pNumAzs', 3 ]
 
   cCreateTier1With3Azs: !And [ !Equals [ !Ref 'pTier1Create', true ], !Equals [ !Ref 'pNumAzs', 3 ] ]
+  cCreateTier2With3Azs: !And [ !Equals [ !Ref 'pTier2Create', true ], !Equals [ !Ref 'pNumAzs', 3 ] ]
+  cCreateTier3With3Azs: !And [ !Equals [ !Ref 'pTier3Create', true ], !Equals [ !Ref 'pNumAzs', 3 ] ]
 
 Resources:
 
@@ -257,7 +251,7 @@ Resources:
       EnableDnsHostnames: 'true'
       Tags:
       - Key: Name
-        Value: !Sub '${pHostingEnvironmentAccount}-${pHostingEnvironmentInstance}-VPC'
+        Value: !Sub '${AWS::StackName}-VPC'
 
 #------------------------------------------------------------------------------
 # Tier 1
@@ -269,7 +263,7 @@ Resources:
     Properties:
       Tags:
       - Key: Name
-        Value: !Sub '${pHostingEnvironmentAccount}-${pHostingEnvironmentInstance}-IGW'
+        Value: !Sub '${AWS::StackName}-IGW'
 
   rTier1InternetGatewayAttachment:
     Type: AWS::EC2::VPCGatewayAttachment
@@ -289,7 +283,7 @@ Resources:
       VpcId: !Ref 'rVpc'
       Tags:
       - Key: Name
-        Value: !Sub '${pHostingEnvironmentAccount}-${pHostingEnvironmentInstance}-${pTier1Name}-Subnet-1'
+        Value: !Sub '${AWS::StackName}-${pTier1Name}-Subnet-1'
   
   rTier1Subnet2:
     Type: AWS::EC2::Subnet
@@ -302,7 +296,7 @@ Resources:
       VpcId: !Ref 'rVpc'
       Tags:
       - Key: Name
-        Value: !Sub '${pHostingEnvironmentAccount}-${pHostingEnvironmentInstance}-${pTier1Name}-Subnet-2'
+        Value: !Sub '${AWS::StackName}-${pTier1Name}-Subnet-2'
  
   rTier1Subnet3:
     Type: AWS::EC2::Subnet
@@ -315,25 +309,27 @@ Resources:
       VpcId: !Ref 'rVpc'
       Tags:
       - Key: Name
-        Value: !Sub '${pHostingEnvironmentAccount}-${pHostingEnvironmentInstance}-${pTier1Name}-Subnet-3'
+        Value: !Sub '${AWS::StackName}-${pTier1Name}-Subnet-3'
 
   rTier1RouteTable1:
     Type: AWS::EC2::RouteTable
+    Condition: cCreateTier1
     DependsOn: rTier1InternetGatewayAttachment
     Properties:
       VpcId: !Ref 'rVpc'
       Tags:
       - Key: Name
-        Value: !Sub '${pHostingEnvironmentAccount}-${pHostingEnvironmentInstance}-${pTier1Name}-Route-Table-1'
+        Value: !Sub '${AWS::StackName}-${pTier1Name}-Route-Table-1'
 
   rTier1RouteTable2:
     Type: AWS::EC2::RouteTable
+    Condition: cCreateTier1
     DependsOn: rTier1InternetGatewayAttachment
     Properties:
       VpcId: !Ref 'rVpc'
       Tags:
       - Key: Name
-        Value: !Sub '${pHostingEnvironmentAccount}-${pHostingEnvironmentInstance}-${pTier1Name}-Route-Table-2'
+        Value: !Sub '${AWS::StackName}-${pTier1Name}-Route-Table-2'
 
   rTier1RouteTable3:
     Type: AWS::EC2::RouteTable
@@ -343,7 +339,7 @@ Resources:
       VpcId: !Ref 'rVpc'
       Tags:
       - Key: Name
-        Value: !Sub '${pHostingEnvironmentAccount}-${pHostingEnvironmentInstance}-${pTier1Name}-Route-Table-3'
+        Value: !Sub '${AWS::StackName}-${pTier1Name}-Route-Table-3'
 
   rTier1IgwRoute1:
     Type: AWS::EC2::Route
@@ -390,36 +386,155 @@ Resources:
 # Tier 2
 #------------------------------------------------------------------------------
 
+  rTier2Subnet1:
+    Type: AWS::EC2::Subnet
+    Condition: cCreateTier2
+    Properties:
+      AvailabilityZone: !Select
+                    - 0
+                    - !GetAZs ''
+      CidrBlock: !Ref 'pTier2Subnet1Cidr'
+      VpcId: !Ref 'rVpc'
+      Tags:
+      - Key: Name
+        Value: !Sub '${AWS::StackName}-${pTier2Name}-Subnet-1'
+  
+  rTier2Subnet2:
+    Type: AWS::EC2::Subnet
+    Condition: cCreateTier2
+    Properties:
+      AvailabilityZone: !Select
+                    - 1
+                    - !GetAZs ''
+      CidrBlock: !Ref 'pTier2Subnet2Cidr'
+      VpcId: !Ref 'rVpc'
+      Tags:
+      - Key: Name
+        Value: !Sub '${AWS::StackName}-${pTier2Name}-Subnet-2'
+ 
+  rTier2Subnet3:
+    Type: AWS::EC2::Subnet
+    Condition: cCreateTier2With3Azs
+    Properties:
+      AvailabilityZone: !Select
+                    - 2
+                    - !GetAZs ''
+      CidrBlock: !Ref 'pTier2Subnet3Cidr'
+      VpcId: !Ref 'rVpc'
+      Tags:
+      - Key: Name
+        Value: !Sub '${AWS::StackName}-${pTier2Name}-Subnet-3'
 
 #------------------------------------------------------------------------------
 # Tier 3
 #------------------------------------------------------------------------------
 
+  rTier3Subnet1:
+    Type: AWS::EC2::Subnet
+    Condition: cCreateTier3
+    Properties:
+      AvailabilityZone: !Select
+                    - 0
+                    - !GetAZs ''
+      CidrBlock: !Ref 'pTier3Subnet1Cidr'
+      VpcId: !Ref 'rVpc'
+      Tags:
+      - Key: Name
+        Value: !Sub '${AWS::StackName}-${pTier3Name}-Subnet-1'
+  
+  rTier3Subnet2:
+    Type: AWS::EC2::Subnet
+    Condition: cCreateTier3
+    Properties:
+      AvailabilityZone: !Select
+                    - 1
+                    - !GetAZs ''
+      CidrBlock: !Ref 'pTier3Subnet2Cidr'
+      VpcId: !Ref 'rVpc'
+      Tags:
+      - Key: Name
+        Value: !Sub '${AWS::StackName}-${pTier3Name}-Subnet-2'
+ 
+  rTier3Subnet3:
+    Type: AWS::EC2::Subnet
+    Condition: cCreateTier3With3Azs
+    Properties:
+      AvailabilityZone: !Select
+                    - 2
+                    - !GetAZs ''
+      CidrBlock: !Ref 'pTier3Subnet3Cidr'
+      VpcId: !Ref 'rVpc'
+      Tags:
+      - Key: Name
+        Value: !Sub '${AWS::StackName}-${pTier3Name}-Subnet-3'
+        
 Outputs:
 
   oVpcId:
     Description: VpcId
     Value: !Ref 'rVpc'
     Export:
-      Name: !Sub '${pHostingEnvironmentAccount}-${pHostingEnvironmentInstance}-VpcId'
+      Name: !Sub '${AWS::StackName}-VpcId'
 
   oTier1Subnet1:
     Description: Tier 1 Subnet 1
     Value: !Ref 'rTier1Subnet1'
     Condition: cCreateTier1
     Export:
-      Name: !Sub '${pHostingEnvironmentAccount}-${pHostingEnvironmentInstance}-Tier1Subnet1'
+      Name: !Sub '${AWS::StackName}-Tier1Subnet1'
 
   oTier1Subnet2:
     Description: Tier 1 Subnet 2
     Value: !Ref 'rTier1Subnet2'
     Condition: cCreateTier1
     Export:
-      Name: !Sub '${pHostingEnvironmentAccount}-${pHostingEnvironmentInstance}-Tier1Subnet2'
+      Name: !Sub '${AWS::StackName}-Tier1Subnet2'
 
   oTier1Subnet3:
     Description: Tier 1 Subnet 3
     Value: !Ref 'rTier1Subnet3'
     Condition: cCreateTier1With3Azs
     Export:
-      Name: !Sub '${pHostingEnvironmentAccount}-${pHostingEnvironmentInstance}-Tier1Subnet3'
+      Name: !Sub '${AWS::StackName}-Tier1Subnet3'
+
+  oTier2Subnet1:
+    Description: Tier 2 Subnet 1
+    Value: !Ref 'rTier2Subnet1'
+    Condition: cCreateTier2
+    Export:
+      Name: !Sub '${AWS::StackName}-Tier2Subnet1'
+
+  oTier2Subnet2:
+    Description: Tier 2 Subnet 2
+    Value: !Ref 'rTier2Subnet2'
+    Condition: cCreateTier2
+    Export:
+      Name: !Sub '${AWS::StackName}-Tier2Subnet2'
+
+  oTier2Subnet3:
+    Description: Tier 2 Subnet 3
+    Value: !Ref 'rTier2Subnet3'
+    Condition: cCreateTier2With3Azs
+    Export:
+      Name: !Sub '${AWS::StackName}-Tier2Subnet3'
+
+  oTier3Subnet1:
+    Description: Tier 3 Subnet 1
+    Value: !Ref 'rTier3Subnet1'
+    Condition: cCreateTier3
+    Export:
+      Name: !Sub '${AWS::StackName}-Tier3Subnet1'
+
+  oTier3Subnet2:
+    Description: Tier 3 Subnet 2
+    Value: !Ref 'rTier3Subnet2'
+    Condition: cCreateTier3
+    Export:
+      Name: !Sub '${AWS::StackName}-Tier3Subnet2'
+
+  oTier3Subnet3:
+    Description: Tier 3 Subnet 3
+    Value: !Ref 'rTier3Subnet3'
+    Condition: cCreateTier3With3Azs
+    Export:
+      Name: !Sub '${AWS::StackName}-Tier3Subnet3'

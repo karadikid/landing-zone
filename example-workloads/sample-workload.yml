@@ -177,7 +177,7 @@ Resources:
     Type: 'AWS::AutoScaling::AutoScalingGroup'
     Properties:
       MinSize: '1'
-      MaxSize: '1'
+      MaxSize: '4'
       DesiredCapacity: !Ref pServerCount
       VPCZoneIdentifier:
         - Fn::ImportValue: !Sub "${pNetworkStack}-Tier1Subnet1"
