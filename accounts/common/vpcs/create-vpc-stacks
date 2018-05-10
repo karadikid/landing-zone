@@ -4,13 +4,13 @@ AWS_REGION=us-east-1
 CFN_TEMPLATE=file:///$PWD/vpc-multi-tier-template.yml
 
 FILES=( \
-  "VPC-Platform" \
+#  "VPC-Platform" \
   "VPC-Security" \
-  "VPC-Audit" \
-  "VPC-Sandbox" \ 
-  "VPC-NonProd" \ 
-  "VPC-PreProd" \ 
-  "VPC-Prod"
+#  "VPC-Audit" \
+#  "VPC-Sandbox" \ 
+#  "VPC-NonProd" \ 
+#  "VPC-PreProd" \ 
+#  "VPC-Prod"
 )
 
 for STACK_NAME in "${FILES[@]}"

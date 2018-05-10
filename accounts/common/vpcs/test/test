@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 AWS_REGION=us-east-1
-STACK_NAME=Test-VPC
+STACK_NAME=VPC-Test
 
 aws cloudformation create-stack \
                      --stack-name ${STACK_NAME} \
