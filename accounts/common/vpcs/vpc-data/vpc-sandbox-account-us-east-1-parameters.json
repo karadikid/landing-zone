@@ -13,7 +13,11 @@
   }, 
   {
     "ParameterKey": "pTier1Create",
-    "ParameterValue": "false"
+    "ParameterValue": "true"
+  }, 
+  {
+    "ParameterKey": "pTier2Name",
+    "ParameterValue": "PublicSubnet"
   }, 
   {
     "ParameterKey": "pTier2Create",
@@ -30,6 +34,14 @@
   {
     "ParameterKey": "pTier3Name",
     "ParameterValue": "DataSubnet"
+  }, 
+  {
+    "ParameterKey": "pTier1Subnet1Cidr",
+    "ParameterValue": "10.137.32.0/22"
+  }, 
+  {
+    "ParameterKey": "pTier1Subnet2Cidr",
+    "ParameterValue": "10.137.36.0/22"
   }, 
   {
     "ParameterKey": "pTier2Subnet1Cidr",

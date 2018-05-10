@@ -11,7 +11,7 @@ import time
 
 '''AWS Organizations Set Up Organizational Units (OUs) and Service Control Policies (SCPs)
 
-This script modifies the root OU, creates children OUs, creates a set of Service Control Policies
+This script modifies the root OU, manages children OUs, manages a set of Service Control Policies
 and attaches several of the SCPs to several of the OUs
 
 '''
