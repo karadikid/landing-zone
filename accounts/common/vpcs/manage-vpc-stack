@@ -3,6 +3,7 @@
 from __future__ import print_function
 import boto3
 import botocore
+import json
 import time
 import sys
 import argparse
@@ -18,17 +19,10 @@ __author__ = '@author@'
 __email__ = '@email@'
 
 
-def create_account(
-        account_name,
-        account_email,
-        account_role,
-        ou_name,
-        scp_name,
-        access_to_billing,
-        region):
+def get_account_id(account_name, region):
 
     '''
-        Create a new AWS account and add it to an organization
+        Get account ID based on the name
     '''
 
     client = boto3.client('organizations')
@@ -47,118 +41,16 @@ def create_account(
         for account in page['Accounts']:
             print(account['Name'])
             if account['Name'] == account_name:
-                print("Account already exists: " + account_name + " " + account["Id"])
+                print("Account found: " + account_name + " " + account["Id"])
                 account_id = account["Id"]
                 break
     
     if account_id is None:
-        try:
-            create_account_response = client.create_account(
-                Email=account_email,
-                AccountName=account_name,
-                RoleName=account_role,
-                IamUserAccessToBilling=access_to_billing)
-                
-        except botocore.exceptions.ClientError as e:
-            print(e)
-            sys.exit(1)
-
-        time.sleep(10)
-
-        account_status = 'IN_PROGRESS'
-        while account_status == 'IN_PROGRESS':
-            create_account_status_response = client.describe_create_account_status(
-                CreateAccountRequestId=create_account_response.get('CreateAccountStatus').get('Id'))
-            print("Create account status "+str(create_account_status_response))
-            account_status = create_account_status_response.get('CreateAccountStatus').get('State')
-        if account_status == 'SUCCEEDED':
-            account_id = create_account_status_response.get('CreateAccountStatus').get('AccountId')
-        elif account_status == 'FAILED':
-            print("Account creation failed: " + create_account_status_response.get('CreateAccountStatus').get('FailureReason'))
-            sys.exit(1)
-            
-    root_id = client.list_roots().get('Roots')[0].get('Id')
-        
-    parents = client.list_parents(
-        ChildId=account_id
-    )
-    parent_id = parents.get('Parents')[0].get('Id')
-
-    if ou_name is None:
-        # Ensure account is moved to Root if not already there
-        if root_id != parent_id:
-            move_account(account_id, parent_id, root_id, region)
-            
-    else:
-        # Move account to the specified OU
-        ou_id = get_ou_id(ou_name, region)
-       
-        if ou_id != parent_id: 
-            move_account(account_id, parent_id, ou_id, region)
-
-    if scp_name is not None:
-        attach_scp(account_id, scp_name, region) 
+        print("Account name not found: ", account_name)
+        sys.exit(1)
 
     return account_id
 
-
-def move_account(account_id, parent_id, destination_id, region):
-
-    client = boto3.client('organizations', region_name=region)
-       
-    try:
-        client.move_account(
-            AccountId=account_id,
-            SourceParentId=parent_id,
-            DestinationParentId=destination_id)
-               
-    except Exception as ex:
-        template = "An exception of type {0} occurred. Arguments:\n{1!r} "
-        message = template.format(type(ex).__name__, ex.args)
-        print(message)
-
-    return
-
-
-def get_ou_id(name, region):
-
-    client = boto3.client('organizations', region_name=region)
-   
-    try:
-        ou_data = get_root_ou(region) 
-        root_ou_id = ou_data["Id"]
-    
-        response = client.list_organizational_units_for_parent(ParentId=root_ou_id)
-        
-    except botocore.exceptions.ClientError as e:
-        print(e)
-        sys.exit(1)    
-    
-    ous = response.get('OrganizationalUnits')
-    
-    for x in ous:
-        if x['Name'] == name:
-            ou_id = x['Id']
-    
-    if not ou_id:
-       raise ValueError('Cannot find OU name: ', name)
-    
-    return ou_id
-
-
-def get_root_ou(region):
-
-    client = boto3.client('organizations', region_name=region)
-   
-    try:
-        ou_data = client.list_roots()['Roots'][0]
-        
-    except botocore.exceptions.ClientError as e:
-        print(e)
-        sys.exit(1)    
-    
-    return ou_data
-    
 
 def assume_role(account_id, account_role):
 
@@ -203,18 +95,32 @@ def get_template(template_file):
     
     return cf_template
 
+    
+def get_parameters(parameters_file):
 
-def deploy_resources(
+    '''
+        Read a parameters file and return the contents
+    '''
+
+    print("Reading resources from " + parameters_file)
+    f = open(parameters_file, "r")
+    json_data = f.read()
+    cf_parameters = json.loads(json_data)
+    
+    return cf_parameters
+    
+
+def deploy_stack(
     credentials,
-    template,
     stack_name,
-    stack_region,
-    admin_username,
-    admin_password):
+    template,
+    parameters_file,
+    stack_region):
 
     '''
         Create a CloudFormation stack of resources within the new account
     '''
+    parameters = get_parameters(parameters_file)
 
     datestamp = time.strftime("%d/%m/%Y")
     client = boto3.client('cloudformation',
@@ -231,21 +137,13 @@ def deploy_resources(
             create_stack_response = client.create_stack(
                 StackName=stack_name,
                 TemplateBody=template,
-                Parameters=[
-                    {
-                        'ParameterKey' : 'pAdminUserName',
-                        'ParameterValue' : admin_username
-                    },
-                    {
-                        'ParameterKey' : 'pAdminUserPassword',
-                        'ParameterValue' : admin_password
-                    }
-                ],
+                Parameters=parameters,
                 NotificationARNs=[],
                 Capabilities=[
                     'CAPABILITY_NAMED_IAM',
                 ],
                 OnFailure='ROLLBACK',
+                EnableTerminationProtection=True,
                 Tags=[
                     {
                         'Key': 'ManagedResource',
@@ -265,7 +163,7 @@ def deploy_resources(
 
     stack_building = True
     print("Stack creation in process...")
-    print(create_stack_response)
+    #print(create_stack_response)
     while stack_building is True:
         event_list = client.describe_stack_events(StackName=stack_name).get("StackEvents")
         stack_event = event_list[0]
@@ -280,7 +178,7 @@ def deploy_resources(
             print("Stack construction failed.")
             sys.exit(1)
         else:
-            print(stack_event)
+            #print(stack_event)
             print("Stack building . . .")
             time.sleep(10)
 
@@ -295,14 +193,13 @@ def main(arguments):
         description=__doc__,
         formatter_class=argparse.RawDescriptionHelpFormatter)
         
-    parser.add_argument('--stack_name') 
-    parser.add_argument('--stack_name') 
-    parser.add_argument('--template_file')
-    parser.add_argument('--parameter_file')
+    parser.add_argument('--stack_name', required=True) 
+    parser.add_argument('--template_file', required=True)
+    parser.add_argument('--parameters_file', required=True)
     parser.add_argument('--region',
                         default='us-east-1')
-    parser.add_argument('--account_name') 
-    parser.add_argument('--account_role',
+    parser.add_argument('--account_name', required=True) 
+    parser.add_argument('--account_role', required=True,
                         default='OrganizationAccountAccessRole')
     args = parser.parse_args(arguments)
 
@@ -319,10 +216,10 @@ def main(arguments):
         credentials,
         args.stack_name,
         template,
-        parameters,
+        args.parameters_file,
         args.region)
     print(stack)
-    print("Resources deployed for account " + account_id + " (" + args.account_email + ")")
+    print("Resources deployed for account " + account_id)
 
 if __name__ == '__main__':
     sys.exit(main(sys.argv[1:]))
