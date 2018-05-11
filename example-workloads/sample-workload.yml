@@ -12,6 +12,7 @@ Metadata:
         default: Application Environment Configuration
       Parameters:
       - pNetworkStack
+      - pTier
       - pAppName
       - pAppEnvironmentRole
       - pServerCount
@@ -22,6 +23,8 @@ Metadata:
     ParameterLabels:
       pNetworkStack:
         default: Cloud Formation Network Stack Name
+      pTier:
+        default: Target Tier
       pAppName:
         default: Application Name
       pAppEnvironmentRole:
@@ -40,6 +43,15 @@ Parameters:
   pNetworkStack:
     Description: Name of network Cloud Formation stack to which this workload is to be deployed
     Type: String
+
+  pTier:
+    Description: Which tier to which the stack will be deployed
+    Type: String
+    Default: 'Tier1'
+    AllowedValues:
+    - Tier1
+    - Tier2
+    - Tier3
 
   pAppName:
     Description: Name of the application
@@ -129,8 +141,8 @@ Resources:
       SecurityGroups:
         - !Ref rAlbSecurityGroup
       Subnets:
-        - Fn::ImportValue: !Sub "${pNetworkStack}-Tier1Subnet1"
-        - Fn::ImportValue: !Sub "${pNetworkStack}-Tier1Subnet2"
+        - Fn::ImportValue: !Sub "${pNetworkStack}-${pTier}Subnet1"
+        - Fn::ImportValue: !Sub "${pNetworkStack}-${pTier}Subnet2"
 
   rAlbSecurityGroup:
     Type: 'AWS::EC2::SecurityGroup'
@@ -180,8 +192,8 @@ Resources:
       MaxSize: '4'
       DesiredCapacity: !Ref pServerCount
       VPCZoneIdentifier:
-        - Fn::ImportValue: !Sub "${pNetworkStack}-Tier1Subnet1"
-        - Fn::ImportValue: !Sub "${pNetworkStack}-Tier1Subnet2"
+        - Fn::ImportValue: !Sub "${pNetworkStack}-{pTier}Subnet1"
+        - Fn::ImportValue: !Sub "${pNetworkStack}-{pTier}Subnet2"
       TargetGroupARNs:
         - !Ref rTargetGroup
       LaunchConfigurationName: !Ref rLaunchConfig
