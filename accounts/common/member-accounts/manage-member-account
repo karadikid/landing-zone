@@ -294,10 +294,15 @@ def deploy_resources(
                 ]
             )
         except botocore.exceptions.ClientError as e:
-            creating_stack = True
-            print(e)
-            print("Retrying...")
-            time.sleep(10)
+            if e.response['Error']['Code'] == 'AlreadyExistsException':
+                print("Stack already exists: " + stack_name)
+                stack = client.describe_stacks(StackName=stack_name)
+                return stack
+            else:
+                creating_stack = True
+                print(e)
+                print("Retrying...")
+                time.sleep(10)
 
     stack_building = True
     print("Stack creation in process...")
