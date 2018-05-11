@@ -192,8 +192,8 @@ Resources:
       MaxSize: '4'
       DesiredCapacity: !Ref pServerCount
       VPCZoneIdentifier:
-        - Fn::ImportValue: !Sub "${pNetworkStack}-{pTier}Subnet1"
-        - Fn::ImportValue: !Sub "${pNetworkStack}-{pTier}Subnet2"
+        - Fn::ImportValue: !Sub "${pNetworkStack}-${pTier}Subnet1"
+        - Fn::ImportValue: !Sub "${pNetworkStack}-${pTier}Subnet2"
       TargetGroupARNs:
         - !Ref rTargetGroup
       LaunchConfigurationName: !Ref rLaunchConfig
