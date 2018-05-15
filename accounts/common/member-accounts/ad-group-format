@@ -1,1 +1,21 @@
 AWS-<Account Number>-ReadOnly
+
+Understanding the AWS-<Account Number>-<Role Name> naming convention
+
+In the preceding section, we utilized a naming convention of AWS-<Account Number>-<Role Name> for the groups stored in Active Directory. To understand why this was chosen, we must first consider several aspects of how AWS environments are commonly segregated:
+
+    Most AWS customers use multiple AWS accounts. These accounts are organized using common dimensions (e.g. line of business, environment, application, etc) that are often combined. For example, one account might be used for Finance-Prod while another might be used for HR-NonProd.
+    Most AWS customers apply permissions based on the organizational role of the user. For example, an organization might have roles such as 'Developer,''ProductionSupport,''Engineering,' or 'Security.'
+    Most users have access only to a subset of their organization's AWS accounts. For example, if a developer is writing applications for the Finance department they will have access to the Finance-* set of accounts, but not to the HR-* set of accounts.
+    To apply separation of duties, most users have different roles in different accounts. For example, an individual may have a relatively powerful role (e.g. PowerUser) in a non-production account where they perform development work, but a more constrained role (e.g. ReadOnly) in a production account where they mainly access log files for debugging purposes.
+
+The AWS-<Account Number>-<Role Name> naming convention was specifically formulated to provide a best practice pattern for group naming that was able to account for all the aspects identified above. While the specific set of dimensions an organization may choose to use for account segmentation or the specific set of named roles an organization may define will certainly vary from one organization to the next, this standard works in all known cases. We highly encourage you to use this pattern within your organization, as it has been proven across a large number of customer implementations at scale.
+Add users as group members
+
+Next, we need to add our two users, bob and alice, to our newly created groups. In this exercise, you perform this directly through the Active Directory management interface. This method is intended to provide the "cooking show" version of this process. In your organization, the process for a user to be placed into one of the groups used to control AWS access should be managed through an entitlement portal, a managed workflow environment, or other trusted process.
+
+Important: In a federated scenario the IdP is entirely responsible for authorizing which roles within AWS a given user can assume. Using the patterns and configurations shown here, the groups in Active Directory serve as the source of truth for these entitlements. If a user belongs to one of the specially named groups, they can access AWS within the confines of the corresponding AWS account and IAM role. As such, please ensure that as you adapt these learnings to your environment:
+
+    You appropriately restrict the users and automated tools can modify these group memberships.
+    You properly vet and approve users who are placed into these groups.
+    You regularly baseline and audit these group memberships to ensure they contain the right users.
