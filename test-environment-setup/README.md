@@ -80,7 +80,7 @@ First, create a new IAM policy:
 5. Copy the content of the following file over the content in the JSON editor:
 
 ```
-$ cat landing-zone/test-environment-setup/policies/ec2-policy.json
+$ cat landing-zone/test-environment-setup/ec2-policy.json
 ```
 
 6. Click Review policy
