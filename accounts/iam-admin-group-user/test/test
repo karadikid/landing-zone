@@ -5,7 +5,7 @@ STACK_NAME=TestAdminGroupUser
 
 aws cloudformation create-stack \
                      --stack-name ${STACK_NAME} \
-                     --template-body file:///$PWD/../admin-group-user.yml \
+                     --template-body file:///$PWD/../iam-admin-group-user.yml \
                      --parameters file:///$PWD/parameters.json \
                      --capabilities CAPABILITY_NAMED_IAM \
                      --region ${AWS_REGION}
