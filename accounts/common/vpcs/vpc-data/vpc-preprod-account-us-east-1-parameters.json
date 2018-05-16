@@ -1,9 +1,5 @@
 [
   {
-    "ParameterKey": "pHostingEnvironmentAccount",
-    "ParameterValue": "PreProd"
-  }, 
-  {
     "ParameterKey": "pVpcCidr",
     "ParameterValue": "10.136.192.0/19"
   }, 

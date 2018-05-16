@@ -7,10 +7,6 @@ Metadata:
   AWS::CloudFormation::Interface:
     ParameterGroups:
     - Label:
-        default: Hosting Environment Configuration
-      Parameters:
-      - pHostingEnvironmentAccount
-    - Label:
         default: VPC Configuration
       Parameters:
       - pVpcCidr
@@ -42,9 +38,6 @@ Metadata:
       - pTier3Subnet3Cidr
 
     ParameterLabels:
-      pHostingEnvironmentAccount:
-        default: Hosting Environment Account
-
       pVpcCidr:
         default: VPC CIDR Block
       pNumAzs:
@@ -87,19 +80,6 @@ Metadata:
 
 Parameters:
 
-  pHostingEnvironmentAccount:
-    Type: String
-    Description: Role of the AWS account
-    Default: Sandbox
-    AllowedValues:
-    - Audit
-    - Security
-    - Platform
-    - Sandbox
-    - NonProd
-    - PreProd
-    - Prod 
-    
   pVpcCidr:
     Type: String
     Description: CIDR Format x.x.x.x/x
@@ -234,8 +214,7 @@ Conditions:
   cCreateTier3: !Equals [ !Ref 'pTier3Create', true ]
   
   cCreateTier1InternetGateway: !And [ !Equals [ !Ref 'pTier1CreateInternetGateway', true ], !Equals [ !Ref 'pTier1Create', true ] ]
-  
-  cCreate3AZs: !Equals [ !Ref 'pNumAzs', 3 ]
+  cCreateTier1InternetGateway3Azs: !And [ !Equals [ !Ref 'pTier1CreateInternetGateway', true ], !Equals [ !Ref 'pNumAzs', 3 ] ]
 
   cCreateTier1With3Azs: !And [ !Equals [ !Ref 'pTier1Create', true ], !Equals [ !Ref 'pNumAzs', 3 ] ]
   cCreateTier2With3Azs: !And [ !Equals [ !Ref 'pTier2Create', true ], !Equals [ !Ref 'pNumAzs', 3 ] ]
@@ -313,7 +292,7 @@ Resources:
 
   rTier1RouteTable1:
     Type: AWS::EC2::RouteTable
-    Condition: cCreateTier1
+    Condition: cCreateTier1InternetGateway
     DependsOn: rTier1InternetGatewayAttachment
     Properties:
       VpcId: !Ref 'rVpc'
@@ -323,7 +302,7 @@ Resources:
 
   rTier1RouteTable2:
     Type: AWS::EC2::RouteTable
-    Condition: cCreateTier1
+    Condition: cCreateTier1InternetGateway
     DependsOn: rTier1InternetGatewayAttachment
     Properties:
       VpcId: !Ref 'rVpc'
@@ -333,7 +312,7 @@ Resources:
 
   rTier1RouteTable3:
     Type: AWS::EC2::RouteTable
-    Condition: cCreateTier1With3Azs
+    Condition: cCreateTier1InternetGateway3Azs
     DependsOn: rTier1InternetGatewayAttachment
     Properties:
       VpcId: !Ref 'rVpc'
@@ -343,7 +322,7 @@ Resources:
 
   rTier1IgwRoute1:
     Type: AWS::EC2::Route
-    Condition: cCreateTier1
+    Condition: cCreateTier1InternetGateway
     Properties:
       DestinationCidrBlock: 0.0.0.0/0
       GatewayId: !Ref 'rTier1InternetGateway'
@@ -351,7 +330,7 @@ Resources:
 
   rTier1IgwRoute2:
     Type: AWS::EC2::Route
-    Condition: cCreateTier1
+    Condition: cCreateTier1InternetGateway
     Properties:
       DestinationCidrBlock: 0.0.0.0/0
       GatewayId: !Ref 'rTier1InternetGateway'
@@ -359,7 +338,7 @@ Resources:
 
   rTier1IgwRoute3:
     Type: AWS::EC2::Route
-    Condition: cCreateTier1With3Azs
+    Condition: cCreateTier1InternetGateway3Azs
     Properties:
       DestinationCidrBlock: 0.0.0.0/0
       GatewayId: !Ref 'rTier1InternetGateway'
@@ -367,21 +346,21 @@ Resources:
 
   rTier1Subnet1RouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
-    Condition: cCreateTier1
+    Condition: cCreateTier1InternetGateway
     Properties:
       RouteTableId: !Ref 'rTier1RouteTable1'
       SubnetId: !Ref 'rTier1Subnet1'
 
   rTier1Subnet2RouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
-    Condition: cCreateTier1
+    Condition: cCreateTier1InternetGateway
     Properties:
       RouteTableId: !Ref 'rTier1RouteTable2'
       SubnetId: !Ref 'rTier1Subnet2'
 
   rTier1Subnet3RouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
-    Condition: cCreateTier1With3Azs
+    Condition: cCreateTier1InternetGateway3Azs
     Properties:
       RouteTableId: !Ref 'rTier1RouteTable3'
       SubnetId: !Ref 'rTier1Subnet3'

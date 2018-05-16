@@ -8,9 +8,9 @@ import time
 import sys
 import argparse
 
-'''AWS VPCs Manage a VPC
+'''AWS Create CloudFormation Stack
 
-This module manages a VPC based on lifeycle operation and CloudFormation stack parameter
+This script creates a CloudFormation stack either in the current AWS account or a supplied account name
 
 '''
 

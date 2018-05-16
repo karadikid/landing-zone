@@ -1,9 +1,5 @@
 [
   {
-    "ParameterKey": "pHostingEnvironmentAccount",
-    "ParameterValue": "Platform"
-  }, 
-  {
     "ParameterKey": "pVpcCidr",
     "ParameterValue": "10.137.0.0/19"
   }, 

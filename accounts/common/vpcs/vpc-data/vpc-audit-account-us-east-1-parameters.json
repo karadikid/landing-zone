@@ -1,9 +1,5 @@
 [
   {
-    "ParameterKey": "pHostingEnvironmentAccount",
-    "ParameterValue": "Audit"
-  }, 
-  {
     "ParameterKey": "pVpcCidr",
     "ParameterValue": "10.137.80.0/23"
   }, 

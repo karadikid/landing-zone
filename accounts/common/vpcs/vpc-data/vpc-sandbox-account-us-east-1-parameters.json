@@ -1,9 +1,5 @@
 [
   {
-    "ParameterKey": "pHostingEnvironmentAccount",
-    "ParameterValue": "Sandbox"
-  }, 
-  {
     "ParameterKey": "pVpcCidr",
     "ParameterValue": "10.137.32.0/19"
   }, 

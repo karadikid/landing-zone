@@ -106,12 +106,16 @@ Associate the new role with your Cloud9 EC2 instance:
 4. Select the `lz-admin-ec2` role
 5. Click Apply
  
-## Install boto3 Python Library for AWS
+## Install [boto3](https://boto3.readthedocs.io/en/latest/) Python Library for AWS
 
 Since we'll be using Python scripts to automate some of the AWS environment set up, we'll want to install the latest version of the Python library for AWS.
 
     $ sudo pip install boto3
 
+## Install [cfn-lint](https://github.com/awslabs/cfn-python-lint) Static Analysis Tool for CloudFormation
+
+    $ sudo pip install cfn-lint
+    
 ## Validate the Environment
 
 We'll use the InSpec testing framework to help validate that the environment is set up properly. InSpec has a set of built-in
