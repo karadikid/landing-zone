@@ -1,0 +1,41 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "VisualEditor0",
+            "Effect": "Allow",
+            "Action": [
+                "organizations:ListRoots",
+                "organizations:DisableAWSServiceAccess",
+                "organizations:CreateAccount",
+                "organizations:DeleteOrganization",
+                "organizations:ListAWSServiceAccessForOrganization",
+                "organizations:ListPolicies",
+                "organizations:ListHandshakesForOrganization",
+                "organizations:LeaveOrganization",
+                "organizations:ListHandshakesForAccount",
+                "organizations:ListAccounts",
+                "organizations:EnableAWSServiceAccess",
+                "organizations:ListCreateAccountStatus",
+                "organizations:DescribeOrganization",
+                "organizations:EnableAllFeatures",
+                "organizations:CreatePolicy",
+                "organizations:DescribeCreateAccountStatus",
+                "organizations:CreateOrganization"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Sid": "VisualEditor1",
+            "Effect": "Allow",
+            "Action": "organizations:*",
+            "Resource": [
+                "arn:aws:organizations::*:handshake/o-*/*/h-*",
+                "arn:aws:organizations::*:account/o-*/*",
+                "arn:aws:organizations::*:root/o-*/r-*",
+                "arn:aws:organizations::*:ou/o-*/ou-*",
+                "arn:aws:organizations::*:policy/o-*>/*/p-*"
+            ]
+        }
+    ]
+}
